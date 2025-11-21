@@ -46,3 +46,20 @@
   justify-content: flex-end;
   padding-right: 5vh;
 }
+
+@media (prefers-color-scheme: light) {
+  .header {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.85),
+      rgba(240, 242, 247, 0.85)
+    );
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(200, 200, 200, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .header-center h2 {
+      color: #14141488;
+  }
+}

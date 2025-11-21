@@ -23,6 +23,6 @@ body {
 
 @media (prefers-color-scheme: light) {
   :root {
-    background: white;
+    background: radial-gradient(circle at top left, #ffffff, #f2f3f7, #e6e8ef);
   }
 }

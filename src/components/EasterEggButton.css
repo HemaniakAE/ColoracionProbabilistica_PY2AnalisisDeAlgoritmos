@@ -55,3 +55,14 @@
   85% { opacity: 1; }
   100% { opacity: 0; transform: translate(-5%, 20px); }
 }
+
+@media (prefers-color-scheme: light) {
+    .easter-egg-button {
+        color: #14141488;
+    }
+
+    .easter-toast {
+        background: rgba(128, 116, 116, 0.288);
+        color: rgb(77, 70, 70);
+    }
+}

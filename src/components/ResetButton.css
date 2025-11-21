@@ -25,3 +25,9 @@
 .reset-button-logo:active {
     transform: scale(0.9);
 }
+
+@media (prefers-color-scheme: light) {
+    .reset-button {
+        color: #14141488;
+    }
+}
