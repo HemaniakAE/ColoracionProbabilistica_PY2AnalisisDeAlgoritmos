@@ -4,10 +4,10 @@ import ReactFlow, {
   Controls,
   MiniMap,
   useNodesState,
-  useEdgesState
+  useEdgesState,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import './GraphCanvas.css'
+import "./GraphCanvas.css";
 
 export default function GraphCanvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -19,20 +19,24 @@ export default function GraphCanvas() {
 
   return (
     <div className="graph-canvas-wrapper">
-        <div className="graph-canvas">
+      <div className="graph-canvas">
         <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onNodeDragStop={onNodeDragStop}
-            fitView
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeDragStop={onNodeDragStop}
+          fitView
+          minZoom={0.2}
+          maxZoom={1.5}
+          panOnScroll
+          zoomOnPinch
         >
-            <Background gap={20} size={1} />
-            <Controls />
-            <MiniMap />
+          <Background gap={20} size={1} />
+          <Controls />
+          <MiniMap />
         </ReactFlow>
-        </div>
+      </div>
     </div>
   );
 }

@@ -79,3 +79,43 @@
     fill: #4f46e5 !important;
   }
 }
+
+@media (max-width: 480px) {
+
+  .graph-canvas-wrapper {
+    margin-top: 5rem;
+    padding: 0 0.5rem;
+  }
+
+  .graph-canvas {
+    height: 75vh;
+    border-radius: 12px;
+    top: 0;
+  }
+
+  /* Minimapa más pequeño y discreto */
+  .react-flow__minimap {
+    transform: scale(0.8);
+    transform-origin: bottom left;
+    border-radius: 10px;
+  }
+
+  /* Panel de controles más compacto */
+  .react-flow__panel.react-flow__controls {
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  /* Botones más pequeños */
+  .react-flow__controls button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .react-flow__controls button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+}
+

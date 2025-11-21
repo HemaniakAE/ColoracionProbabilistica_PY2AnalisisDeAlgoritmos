@@ -26,3 +26,37 @@ body {
     background: radial-gradient(circle at top left, #ffffff, #f2f3f7, #e6e8ef);
   }
 }
+
+@media (max-width: 480px) {
+  :root {
+    font-size: 14px; /* Reduce base tipográfica para móviles */
+    background: radial-gradient(
+      circle at 50% 20%,
+      #050506,
+      #101012,
+      #000000
+    );
+  }
+
+  body {
+    place-items: stretch; /* evita centrado forzado en flex */
+  }
+
+  /* Mejora usabilidad táctil */
+  button {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) and (prefers-color-scheme: light) {
+  :root {
+    background: radial-gradient(
+      circle at 50% 20%,
+      #ffffff,
+      #f0f1f6,
+      #e3e5ec
+    );
+  }
+}
+
+

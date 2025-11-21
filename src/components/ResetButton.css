@@ -31,3 +31,13 @@
         color: #14141488;
     }
 }
+
+@media (max-width: 480px) {
+  .reset-button {
+    height: 44px; /* estándar touch */
+  }
+
+  .reset-button-logo {
+    transform: scale(0.95);
+  }
+}

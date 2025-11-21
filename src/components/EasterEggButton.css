@@ -66,3 +66,12 @@
         color: rgb(77, 70, 70);
     }
 }
+
+@media (max-width: 480px) {
+  .easter-toast {
+    right: 10%;
+    transform: translateX(50%);
+    width: 25%;
+  }
+}
+

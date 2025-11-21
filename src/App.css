@@ -10,6 +10,17 @@
   padding: 2em;
 }
 
-.card h2 {
-  color: red;
+@media (max-width: 480px) {
+
+  #root {
+    padding: 1rem;          /* Menos aire en móviles */
+    text-align: center;
+  }
+
+  .card {
+    font-size: 24px;        /* Antes 50px → demasiado grande */
+    padding: 1em;           /* Reduce espacio interno */
+  }
+
 }
+

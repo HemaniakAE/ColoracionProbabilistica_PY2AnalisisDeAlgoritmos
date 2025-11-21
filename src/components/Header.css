@@ -63,3 +63,23 @@
       color: #14141488;
   }
 }
+
+@media (max-width: 480px) {
+
+  .header {
+    height: 9vh;
+    padding: 8px 6px;
+  }
+
+  .header-left,
+  .header-right {
+    padding: 0 1rem;
+  }
+
+  .header-center h2 {
+    font-size: 1.5rem;
+    letter-spacing: 0.05rem;
+  }
+
+}
+
