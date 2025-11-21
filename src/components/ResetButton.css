@@ -1,0 +1,27 @@
+.reset-button {
+    cursor: default;
+    background: transparent;
+    height: 5vh;
+    border: 1px solid transparent;
+    color: #bbafaf;
+}
+
+.reset-button:hover {
+    border: 1px solid transparent;
+}
+
+.reset-button:focus,
+.reset-button:active,
+.reset-button:focus-visible {
+    outline: none;
+    border: none;
+}
+
+.reset-botton-logo {
+    cursor: default;
+    transition: transform 0.5s ease;
+}
+
+.reset-botton-logo:active {
+    transform: scale(0.9);
+}
