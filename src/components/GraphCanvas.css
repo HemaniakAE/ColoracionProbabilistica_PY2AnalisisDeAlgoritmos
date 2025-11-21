@@ -1,12 +1,12 @@
 .graph-canvas-wrapper {
-  margin-top: 5rem; /* aquí controlas la separación del header */
+  margin-top: 5rem; 
   padding: 0 2rem;
 }
 
 .graph-canvas {
   width: 100%;
   top: 3vh;
-  height: 80vh; /* resta el header */
+  height: 80vh; 
   background: radial-gradient(circle at 20% 20%, #232329, #1f1e1e);
   border: 2px solid #6a6a6d;
   border-radius: 16px;
@@ -23,7 +23,6 @@
   fill: rgba(0, 0, 0, 0.6);
 }
 
-/************ CONTROLES BASE ************/
 .react-flow__panel.react-flow__controls {
   background: rgba(20, 20, 25, 0.85) !important;
   backdrop-filter: blur(8px);
@@ -33,20 +32,17 @@
   border: 1px solid #444;
 }
 
-/************ BOTONES ************/
 .react-flow__controls button {
   background: transparent !important;
   border: none !important;
   color: #d1d1d1 !important;
 }
 
-/************ ICONOS ************/
 .react-flow__controls button svg {
   fill: #d1d1d1 !important;
   transition: transform 0.2s ease, fill 0.2s ease;
 }
 
-/************ HOVER ************/
 .react-flow__controls button:hover svg {
   fill: #8b5cf6 !important;
   transform: scale(1.1);
