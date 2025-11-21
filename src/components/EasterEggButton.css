@@ -1,0 +1,57 @@
+.easter-egg-button {
+    cursor: pointer;
+    background: transparent;
+    height: 5vh;
+    border: 1px solid transparent;
+    color: #bbafaf;
+}
+
+.easter-egg-button:hover {
+    border: 1px solid transparent;
+}
+
+.easter-egg-button:focus,
+.easter-egg-button:active,
+.easter-egg-button:focus-visible {
+    outline: none;
+    border: none;
+}
+
+.easter-egg-logo {
+    transition: transform 0.5s ease, color 0.5s ease;
+}
+
+.easter-egg-logo:hover {
+    color: #cfc5c5;
+    transform: scale(1.2);
+}
+
+.easter-egg-logo:active {
+    transform: scale(0.9);
+}
+
+/* TOAST FULLSCREEN */
+.easter-toast {
+  position: fixed;
+  top: 10vh;
+  right: 2vh;
+  width: 30vh;
+  text-align: center;
+  background: rgba(48, 31, 31, 0.288);
+  border-radius: 15px;
+  color: white;
+  padding: 10px;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  z-index: 9999;
+  animation: fadeInOut 1s ease forwards;
+  backdrop-filter: blur(8px);
+}
+
+/* Animación vertical */
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-5%, 20px); }
+  15% { opacity: 1; transform: translate(-5%, 0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-5%, 20px); }
+}

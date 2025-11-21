@@ -1,6 +1,7 @@
 import React from "react";
 import './Header.css'
 import ResetButton from "./ResetButton";
+import EasterEggButton from "./EasterEggButton";
 
 export default function Header() {
     return (
@@ -12,7 +13,7 @@ export default function Header() {
                 <h2>Coloración de grafos</h2>
             </div>
             <div className="header-right">
-                <h2>Derecha</h2>
+                <EasterEggButton />
             </div>
         </header>
     );

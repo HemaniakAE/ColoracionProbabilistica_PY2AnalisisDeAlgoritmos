@@ -17,11 +17,11 @@
     border: none;
 }
 
-.reset-botton-logo {
+.reset-button-logo {
     cursor: default;
     transition: transform 0.5s ease;
 }
 
-.reset-botton-logo:active {
+.reset-button-logo:active {
     transform: scale(0.9);
 }
