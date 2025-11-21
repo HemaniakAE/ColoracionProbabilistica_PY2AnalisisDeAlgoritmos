@@ -3,7 +3,7 @@
     background: transparent;
     height: 5vh;
     border: 1px solid transparent;
-    color: #bbafaf;
+    color: #ffffff88;
 }
 
 .easter-egg-button:hover {
@@ -22,7 +22,7 @@
 }
 
 .easter-egg-logo:hover {
-    color: #cfc5c5;
+    color: #b6b1b1;
     transform: scale(1.2);
 }
 

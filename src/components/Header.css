@@ -4,8 +4,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 10px;
-  background: #3d3d3d;
-  border-bottom: 3px solid rgb(90, 89, 89);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.85),
+    rgba(26, 26, 29, 0.85)
+  );
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(63, 60, 60, 0.418);
+  box-shadow: 0 10px 30px rgba(161, 157, 157, 0.4);
   top: 0;
   left: 0;
   width: 99%;
@@ -17,7 +23,6 @@
   display: flex;
   justify-content: flex-start;
   padding-left: 5vh;
-  
 }
 
 .header-center {
@@ -27,12 +32,12 @@
 }
 
 .header-center h2 {
-    font-size: clamp(1.2rem, 2.5vw, 2.4rem);
-    letter-spacing: 0.09rem;
-    font-weight: 600;
-    font-style: italic;
-    line-height: 1.2;
-    color: #bbafaf;
+  font-size: clamp(1.2rem, 2.5vw, 2.4rem);
+  letter-spacing: 0.09rem;
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.2;
+  color: #ffffff88;
 }
 
 .header-right {
