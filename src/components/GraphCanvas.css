@@ -4,7 +4,7 @@
 }
 
 .graph-canvas {
-  width: 100%;
+  width: 120vh;
   top: 3vh;
   height: 80vh; 
   background: radial-gradient(circle at 20% 20%, #232329, #1f1e1e);

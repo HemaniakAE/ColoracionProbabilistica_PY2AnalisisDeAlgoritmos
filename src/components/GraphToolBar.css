@@ -1,0 +1,85 @@
+.graph-toolbar {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.85),
+    rgba(26, 26, 29, 0.85)
+  );
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(63, 60, 60, 0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  padding: 1rem;
+  border-radius: 12px;
+  width: 25vh;
+  margin-bottom: 54vh;
+  margin-right: 5vh;
+}
+
+/* Título arcoíris */
+.graph-toolbar h3 {
+  background: linear-gradient(
+    90deg,
+    red,
+    orange,
+    yellow,
+    green,
+    cyan,
+    blue,
+    violet
+  );
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 6s ease infinite;
+  margin-bottom: 12px;
+  font-size: 4vh;
+}
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Botones */
+.graph-toolbar button {
+    display: flex;
+    align-items: center;
+  width: 100%;
+  background: rgba(40, 40, 40, 0.9);
+  border: none;
+  color: white;
+  padding: 10px;
+  gap: 4vh;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: grab;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.graph-toolbar button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.graph-toolbar button:active {
+  cursor: grabbing;
+}
+
+.addnode-icon {
+  font-size: 1.5rem;
+  animation: rainbow 4s ease infinite;
+  margin-left: 1vh;
+}
+
+@keyframes rainbow-hue {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* opcional: estilo para el texto */
+.add-text {
+  color: white; /* mantiene el texto legible */
+  font-weight: 500;
+}
+
