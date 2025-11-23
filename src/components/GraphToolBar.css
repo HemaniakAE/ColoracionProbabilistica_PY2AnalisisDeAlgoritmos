@@ -10,7 +10,7 @@
   padding: 1rem;
   border-radius: 12px;
   width: 25vh;
-  margin-bottom: 54vh;
+  margin-bottom: 48vh;
   margin-right: 5vh;
 }
 
@@ -68,17 +68,22 @@
 
 .addnode-icon {
   font-size: 1.5rem;
-  animation: rainbow 4s ease infinite;
   margin-left: 1vh;
-}
-
-@keyframes rainbow-hue {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
 }
 
 /* opcional: estilo para el texto */
 .add-text {
+  color: white; /* mantiene el texto legible */
+  font-weight: 500;
+}
+
+.removenode-icon {
+  font-size: 1.5rem;
+  margin-left: 1vh;
+}
+
+/* opcional: estilo para el texto */
+.removenode-text {
   color: white; /* mantiene el texto legible */
   font-weight: 500;
 }

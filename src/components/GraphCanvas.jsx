@@ -5,7 +5,7 @@ import ReactFlow, {
   MiniMap,
   useNodesState,
   useEdgesState,
-  addEdge
+  addEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import "./GraphCanvas.css";
@@ -42,7 +42,7 @@ export default function GraphCanvas() {
       });
 
       const newNode = {
-        id: getId(),        // ✅ ID único
+        id: getId(), // ✅ ID único
         type: "circle",
         position,
         data: { label: nodes.length + 1 },
@@ -52,6 +52,33 @@ export default function GraphCanvas() {
     },
     [setNodes, nodes, reactFlowInstance]
   );
+
+  const addNode = useCallback(
+    (type) => {
+      const newNode = {
+        id: getId(),
+        type: "circle",
+        position: { x: 100, y: 100 }, // posición por defecto o puedes calcular
+        data: { label: nodes.length + 1 },
+      };
+      setNodes((nds) => nds.concat(newNode));
+    },
+    [setNodes, nodes]
+  );
+
+  // Función para eliminar nodos seleccionados
+  const deleteSelectedNodes = useCallback(() => {
+    setNodes((nds) => nds.filter((node) => !node.selected));
+    setEdges((eds) =>
+      eds.filter(
+        (edge) =>
+          !edge.selected &&
+          !nodes.find(
+            (n) => n.selected && (n.id === edge.source || n.id === edge.target)
+          )
+      )
+    );
+  }, [setNodes, setEdges, nodes]);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -66,7 +93,8 @@ export default function GraphCanvas() {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}          // ✅ habilita conexiones
+          onConnect={onConnect} // ✅ habilita conexiones
+          onDeleteNodes={deleteSelectedNodes}
           onInit={(instance) => (reactFlowInstance.current = instance)}
           onDrop={onDrop}
           onDragOver={onDragOver}
