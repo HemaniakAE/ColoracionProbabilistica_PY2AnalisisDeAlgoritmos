@@ -9,8 +9,17 @@ function App() {
   return (
     <>
       <Header />
+
+      <div className="top-side">
+        <h2>Top</h2>
+      </div>
+
       <div className="card">
         <GraphCanvas />
+      </div>
+
+      <div className="bottom-side">
+        <h2>Bottom</h2>
       </div>
     </>
   );
