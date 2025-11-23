@@ -6,7 +6,7 @@
   );
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(63, 60, 60, 0.4);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   padding: 1rem;
   border-radius: 12px;
   width: 28vh;
@@ -38,15 +38,21 @@
 }
 
 @keyframes rainbow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* Botones */
 .graph-toolbar .addnode-button {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
   width: 100%;
   background: rgba(40, 40, 40, 0.9);
   border: none;
@@ -61,7 +67,7 @@
 
 .graph-toolbar .addnode-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .graph-toolbar .addnode-button:active {
@@ -73,15 +79,14 @@
   margin-left: 1vh;
 }
 
-/* opcional: estilo para el texto */
 .add-text {
-  color: white; /* mantiene el texto legible */
+  color: white;
   font-weight: 500;
 }
 
 .graph-toolbar .removenode-button {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
   width: 100%;
   background: rgba(40, 40, 40, 0.9);
   border: none;
@@ -96,7 +101,7 @@
 
 .graph-toolbar .removenode-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
 .graph-toolbar .removenode-button:active {
@@ -108,9 +113,7 @@
   margin-left: 1vh;
 }
 
-/* opcional: estilo para el texto */
 .removenode-text {
-  color: white; /* mantiene el texto legible */
+  color: white; 
   font-weight: 500;
 }
-
