@@ -37,7 +37,34 @@
   font-weight: 600;
   font-style: italic;
   line-height: 1.2;
-  color: #ffffff88;
+
+  background: linear-gradient(
+    90deg,
+    red,
+    orange,
+    yellow,
+    green,
+    cyan,
+    blue,
+    violet
+  );
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 6s ease infinite;
+}
+
+@keyframes rainbow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .header-right {
@@ -60,12 +87,11 @@
   }
 
   .header-center h2 {
-      color: #14141488;
+    color: #14141488;
   }
 }
 
 @media (max-width: 480px) {
-
   .header {
     height: 9vh;
     padding: 8px 6px;
@@ -80,6 +106,4 @@
     font-size: 1.5rem;
     letter-spacing: 0.05rem;
   }
-
 }
-
