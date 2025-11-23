@@ -1,47 +1,14 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import "./App.css";
 import Header from "./components/Header";
 import GraphCanvas from "./components/GraphCanvas";
 import GraphToolbar from "./components/GraphToolBar";
 
-let nodeId = 0;
-
 function App() {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [removeMode, setRemoveMode] = useState(false); // modo eliminar
-
-  const addNode = useCallback(() => {
-    const newNode = {
-      id: `node-${nodeId++}`,
-      type: "circle",
-      position: { x: 150 + Math.random() * 200, y: 150 + Math.random() * 200 },
-      data: { label: `Nodo ${nodeId}` },
-    };
-    setNodes((prev) => [...prev, newNode]);
-  }, []);
+  const [removeMode, setRemoveMode] = useState(false);
 
   const enableRemoveMode = () => {
-    setRemoveMode(true); // activa modo eliminar
-  };
-
-  const handleNodeClick = (nodeIdClicked) => {
-    if (removeMode) {
-      // eliminar nodo clickeado
-      setNodes((nds) => nds.filter((n) => n.id !== nodeIdClicked));
-      setEdges((eds) =>
-        eds.filter(
-          (e) => e.source !== nodeIdClicked && e.target !== nodeIdClicked
-        )
-      );
-      setRemoveMode(false); // desactivar modo eliminar
-    }
-  };
-
-  const handlePaneClick = () => {
-    if (removeMode) {
-      setRemoveMode(false); // click en canvas vacío desactiva modo
-    }
+    setRemoveMode(true);
   };
 
   return (
@@ -50,17 +17,13 @@ function App() {
 
       <div className="top-side">
         <div className="top-left">
-          <GraphCanvas
-            nodes={nodes}
-            setNodes={setNodes}
-            edges={edges}
-            setEdges={setEdges}
-            onNodeClick={handleNodeClick}
-            onPaneClick={handlePaneClick}
+          <GraphCanvas 
+            removeMode={removeMode}
+            setRemoveMode={setRemoveMode}
           />
         </div>
         <div className="top-right">
-          <GraphToolbar onAddNode={addNode} onDeleteNodes={enableRemoveMode} />
+          <GraphToolbar onDeleteNodes={enableRemoveMode} />
         </div>
       </div>
 

@@ -9,9 +9,10 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   padding: 1rem;
   border-radius: 12px;
-  width: 25vh;
-  margin-bottom: 48vh;
-  margin-right: 5vh;
+  width: 28vh;
+  height: 20vh;
+  margin-bottom: 52vh;
+  margin-right: 3vh;
 }
 
 /* Título arcoíris */
@@ -26,12 +27,13 @@
     blue,
     violet
   );
+  margin-top: 0.2px;
   background-size: 400% 400%;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: rainbow 6s ease infinite;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-size: 4vh;
 }
 
@@ -42,7 +44,7 @@
 }
 
 /* Botones */
-.graph-toolbar button {
+.graph-toolbar .addnode-button {
     display: flex;
     align-items: center;
   width: 100%;
@@ -57,12 +59,12 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.graph-toolbar button:hover {
+.graph-toolbar .addnode-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-.graph-toolbar button:active {
+.graph-toolbar .addnode-button:active {
   cursor: grabbing;
 }
 
@@ -75,6 +77,30 @@
 .add-text {
   color: white; /* mantiene el texto legible */
   font-weight: 500;
+}
+
+.graph-toolbar .removenode-button {
+    display: flex;
+    align-items: center;
+  width: 100%;
+  background: rgba(40, 40, 40, 0.9);
+  border: none;
+  color: white;
+  padding: 10px;
+  gap: 4vh;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.graph-toolbar .removenode-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.graph-toolbar .removenode-button:active {
+  background: rgba(54, 54, 54, 0.9);
 }
 
 .removenode-icon {

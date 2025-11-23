@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useMemo } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -7,6 +7,7 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
 } from "reactflow";
+
 import "reactflow/dist/style.css";
 import "./GraphCanvas.css";
 import CircleNode from "./CircleNode";
@@ -14,13 +15,30 @@ import CircleNode from "./CircleNode";
 let id = 0;
 const getId = () => `node_${id++}`;
 
-export default function GraphCanvas() {
+// Definir nodeTypes fuera del componente
+const nodeTypes = { circle: CircleNode };
+
+export default function GraphCanvas({ removeMode, setRemoveMode }) {
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const reactFlowInstance = useRef(null);
 
-  const nodeTypes = { circle: CircleNode };
+  // Manejar click en nodos
+  const handleNodeClick = useCallback((event, node) => {
+    if (removeMode) {
+      setNodes((nds) => nds.filter((n) => n.id !== node.id));
+      setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
+      setRemoveMode(false);
+    }
+  }, [removeMode, setNodes, setEdges, setRemoveMode]);
+
+  // Manejar click en el canvas vacío
+  const handlePaneClick = useCallback(() => {
+    if (removeMode) {
+      setRemoveMode(false);
+    }
+  }, [removeMode, setRemoveMode]);
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();
@@ -36,13 +54,13 @@ export default function GraphCanvas() {
 
       const bounds = reactFlowWrapper.current.getBoundingClientRect();
 
-      const position = reactFlowInstance.current.project({
-        x: event.clientX - bounds.left,
-        y: event.clientY - bounds.top,
+      const position = reactFlowInstance.current.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       const newNode = {
-        id: getId(), // ✅ ID único
+        id: getId(),
         type: "circle",
         position,
         data: { label: nodes.length + 1 },
@@ -53,33 +71,6 @@ export default function GraphCanvas() {
     [setNodes, nodes, reactFlowInstance]
   );
 
-  const addNode = useCallback(
-    (type) => {
-      const newNode = {
-        id: getId(),
-        type: "circle",
-        position: { x: 100, y: 100 }, // posición por defecto o puedes calcular
-        data: { label: nodes.length + 1 },
-      };
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [setNodes, nodes]
-  );
-
-  // Función para eliminar nodos seleccionados
-  const deleteSelectedNodes = useCallback(() => {
-    setNodes((nds) => nds.filter((node) => !node.selected));
-    setEdges((eds) =>
-      eds.filter(
-        (edge) =>
-          !edge.selected &&
-          !nodes.find(
-            (n) => n.selected && (n.id === edge.source || n.id === edge.target)
-          )
-      )
-    );
-  }, [setNodes, setEdges, nodes]);
-
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
@@ -87,14 +78,18 @@ export default function GraphCanvas() {
 
   return (
     <div className="graph-canvas-wrapper" ref={reactFlowWrapper}>
-      <div className="graph-canvas">
+      <div 
+        className="graph-canvas" 
+        style={{ cursor: removeMode ? 'not-allowed' : 'default' }}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect} // ✅ habilita conexiones
-          onDeleteNodes={deleteSelectedNodes}
+          onConnect={onConnect} 
+          onNodeClick={handleNodeClick}
+          onPaneClick={handlePaneClick}
           onInit={(instance) => (reactFlowInstance.current = instance)}
           onDrop={onDrop}
           onDragOver={onDragOver}
@@ -104,6 +99,9 @@ export default function GraphCanvas() {
           panOnScroll
           zoomOnPinch
           nodeTypes={nodeTypes}
+          nodesDraggable={!removeMode}
+          nodesConnectable={!removeMode}
+          elementsSelectable={!removeMode}
         >
           <Background gap={20} size={1} />
           <Controls />
