@@ -3,6 +3,7 @@ import "./ManualExecute.css";
 import Header from "../components/Header";
 import GraphCanvas from "../components/GraphCanvas";
 import GraphToolbar from "../components/GraphToolBar";
+import GraphPlayToolbar from "../components/GraphPlayToolbar";
 
 function ManualExecute() {
   const [removeMode, setRemoveMode] = useState(false);
@@ -24,6 +25,7 @@ function ManualExecute() {
         </div>
         <div className="top-right">
           <GraphToolbar onDeleteNodes={enableRemoveMode} />
+          <GraphPlayToolbar />
         </div>
       </div>
 
