@@ -13,7 +13,7 @@ function HostCard() {
           Modo manual
         </button>
 
-        <button disabled title="Próximamente">
+        <button>
           Modo automático
         </button>
       </div>
