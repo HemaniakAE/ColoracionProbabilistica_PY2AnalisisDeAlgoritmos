@@ -1,0 +1,32 @@
+.card {
+  position: relative;
+  min-height: 50vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Contenedor sello */
+.graph-seal {
+  position: absolute;
+  top: 0;
+  left: 5vh;
+  padding: 10px;
+}
+
+/* Icono adaptado */
+.graph-seal-icon {
+  font-size: 2.5rem;
+  animation: rainbowText 6s linear infinite;
+  cursor: default;
+  transition: transform 3s ease;
+}
+
+/* Interacción sutil */
+.graph-seal-icon:hover {
+  transform: rotate(360deg) scale(1.1);
+}
+
+.graph-seal-icon:active {
+  transform: scale(0.9);
+}
