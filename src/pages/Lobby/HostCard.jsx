@@ -13,7 +13,7 @@ function HostCard() {
           Modo manual
         </button>
 
-        <button>
+        <button onClick={() => navigate("/Automatic")}>
           Modo automático
         </button>
       </div>
