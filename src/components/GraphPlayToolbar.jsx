@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "./GraphPlayToolbar.css";
 import { FaPlay } from "react-icons/fa";
+import { generateRandomGraph } from "../algorithms/graphGenerator";
 
 const AVAILABLE_COLORS = [
   { value: "blue", label: "🔵 Azul" },
@@ -13,7 +14,7 @@ const AVAILABLE_COLORS = [
   { value: "gray", label: "⚪ Gris" }
 ];
 
-export default function GraphPlayToolbar() {
+export default function GraphPlayToolbar({ graphCanvasRef }) {
   const [colorCount, setColorCount] = useState(3);
   const [selectedColors, setSelectedColors] = useState([
     "blue",
@@ -61,6 +62,36 @@ export default function GraphPlayToolbar() {
     setLimitHit(true);
   };
 
+  const handlePlayClick = () => {
+    if (graphCanvasRef && graphCanvasRef.current) {
+      // Generar número aleatorio entre 100 y 150 nodos
+      const nodeCount = Math.floor(Math.random() * (150 - 100 + 1)) + 100;
+      
+      // Generar grafo aleatorio
+      const { nodes, edges } = generateRandomGraph(nodeCount);
+      
+      // Log de depuración (verificar estructuras antes de pasar al canvas)
+      console.log('Generado (pre-set):', JSON.stringify({ nodeCount, nodesCount: nodes.length, edgesCount: edges.length, firstEdge: edges[0] ?? null }, null, 2));
+      // Establecer el grafo en el canvas
+      graphCanvasRef.current.setGraph(nodes, edges);
+      
+      // Leer de vuelta el grafo establecido y loguearlo para confirmar
+      if (graphCanvasRef.current && typeof graphCanvasRef.current.getGraph === 'function') {
+        const current = graphCanvasRef.current.getGraph();
+        console.log('Después de setGraph ->', JSON.stringify({
+          nodesPassed: nodes.length,
+          edgesPassed: edges.length,
+          nodesStored: current.nodes?.length ?? 0,
+          edgesStored: current.edges?.length ?? 0,
+          firstPassedEdge: edges[0] ?? null,
+          firstStoredEdge: current.edges?.[0] ?? null,
+        }, null, 2));
+      }
+
+      console.log(`Grafo generado con ${nodeCount} nodos y ${edges.length} aristas`);
+    }
+  };
+
   const canPlay = selectedColors.length === colorCount;
 
   return (
@@ -72,6 +103,7 @@ export default function GraphPlayToolbar() {
         disabled={!canPlay}
         aria-disabled={!canPlay}
         title={canPlay ? "Ejecutar algoritmo" : `Selecciona ${colorCount} colores`}
+        onClick={handlePlayClick}
       >
         <FaPlay className="play-icon" />
         <span className="play-text">Ejecutar algoritmo</span>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./AutomaticExecute.css";
 import Header from "../../components/Header";
 import GraphCanvas from "../../components/GraphCanvas";
@@ -7,6 +7,7 @@ import GraphPlayToolbar from "../../components/GraphPlayToolbar";
 
 function AutomaticMode() {
   const [removeMode, setRemoveMode] = useState(false);
+  const graphCanvasRef = useRef(null);
 
   const enableRemoveMode = () => {
     setRemoveMode(true);
@@ -19,13 +20,15 @@ function AutomaticMode() {
       <div className="top-side">
         <div className="top-left">
           <GraphCanvas 
+            ref={graphCanvasRef}
             removeMode={removeMode}
             setRemoveMode={setRemoveMode}
+            disableOnConnect={true}
           />
         </div>
         <div className="top-right">
           {/*<GraphToolbar onDeleteNodes={enableRemoveMode} />*/}
-          <GraphPlayToolbar />
+          <GraphPlayToolbar graphCanvasRef={graphCanvasRef} />
         </div>
       </div>
 
