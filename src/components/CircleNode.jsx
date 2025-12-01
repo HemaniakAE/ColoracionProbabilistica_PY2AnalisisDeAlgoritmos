@@ -1,18 +1,7 @@
-// src/components/CircleNode.jsx
 import { Handle, Position } from "reactflow";
 
-const COLORS = [
-  "#e74c3c",
-  "#3498db",
-  "#2ecc71",
-  "#f1c40f",
-  "#9b59b6",
-  "#e67e22",
-];
-
 export default function CircleNode({ data }) {
-  const colorIndex = data?.colorIndex ?? 0;
-  const color = COLORS[colorIndex % COLORS.length];
+  const color = data?.displayColor || "#3498db";
 
   return (
     <div
@@ -21,19 +10,41 @@ export default function CircleNode({ data }) {
         height: 40,
         borderRadius: "50%",
         backgroundColor: color,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "2px solid black",
+        border: "2px solid #000",
+        position: "relative",
       }}
     >
-      {/* SIN TEXTO, solo el círculo */}
+      {/* ARRIBA */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        style={{ width: 8, height: 8, background: "rgba(0,0,0,0.2)" }}
+      />
 
-      {/* Handles para poder conectar (lo vemos en el paso 2) */}
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Top} />
-      <Handle type="target" position={Position.Bottom} />
+      {/* ABAJO */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        style={{ width: 8, height: 8, background: "rgba(0,0,0,0.2)"}}
+      />
+
+      {/* IZQUIERDA */}
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left"
+        style={{ width: 8, height: 8 ,background: "rgba(0,0,0,0.2)" }}
+      />
+
+      {/* DERECHA */}
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
+        style={{ width: 8, height: 8 , background: "rgba(0,0,0,0.2)"}}
+      />
     </div>
   );
 }

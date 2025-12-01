@@ -1,264 +1,205 @@
-import { useState, useCallback } from "react";
-import ReactFlow, { Background, Controls, addEdge } from "reactflow";
+import {
+  useCallback,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
+import ReactFlow, {
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+} from "reactflow";
+
 import "reactflow/dist/style.css";
 import "./GraphCanvas.css";
 import CircleNode from "./CircleNode";
-import { ColoringAlgorithmManager } from "../algorithms";
 
 const nodeTypes = { circle: CircleNode };
 
-const K_COLORS = 4;
-const AUTO_NODE_COUNT = 120;
-const MAX_MANUAL_NODES = 60;
+/**
+ * ✅ VALIDACIÓN AUTOMÁTICA DE CONEXIONES
+ * - Nodo "1": máximo 2 conexiones
+ * - Todos los demás nodos: máximo 3 conexiones
+ */
+function enforceConnectionLimits(edges) {
+  const degree = new Map();
+  const filtered = [];
 
-const manager = new ColoringAlgorithmManager();
-
-// =======================
-// UTILIDAD: contar grado
-// =======================
-function calcularGrados(nodes, edges) {
-  const degree = new Map(nodes.map((n) => [n.id, 0]));
   edges.forEach((e) => {
-    if (degree.has(e.source)) degree.set(e.source, degree.get(e.source) + 1);
-    if (degree.has(e.target)) degree.set(e.target, degree.get(e.target) + 1);
+    const a = String(e.source);
+    const b = String(e.target);
+
+    const da = degree.get(a) || 0;
+    const db = degree.get(b) || 0;
+
+    const maxA = a === "1" ? 2 : 3;
+    const maxB = b === "1" ? 2 : 3;
+
+    // Solo permitimos la arista si ambos nodos aún están debajo de su límite
+    if (da < maxA && db < maxB) {
+      filtered.push(e);
+      degree.set(a, da + 1);
+      degree.set(b, db + 1);
+    }
   });
-  return degree;
+
+  return filtered;
 }
 
-// =======================
-// UTILIDAD: recolorear siempre
-// =======================
-function recalcularColores(nodes, edges) {
-  if (nodes.length === 0) return nodes;
+const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const wrapperRef = useRef(null);
+  const reactFlowInstance = useRef(null);
 
-  const adjacency = new Map(nodes.map((n) => [n.id, new Set()]));
+  // ===== API imperativa para AutomaticExecute / PlayToolbar =====
+  useImperativeHandle(
+    ref,
+    () => ({
+      /**
+       * Recibe nodos y aristas desde el algoritmo / toolbar y
+       * los normaliza + aplica límites de conexiones.
+       */
+      setGraph: (newNodes = [], newEdges = []) => {
+        // 1) Normalizar nodos
+        const normalizedNodes = newNodes.map((n, idx) => {
+          const id = String(n.id ?? idx + 1);
+          return {
+            id,
+            type: "circle",
+            position:
+              n.position ?? {
+                x: 100 + (idx % 15) * 70,
+                y: 80 + Math.floor(idx / 15) * 70,
+              },
+            data: n.data ?? {},
+          };
+        });
 
-  edges.forEach((e) => {
-    adjacency.get(e.source)?.add(e.target);
-    adjacency.get(e.target)?.add(e.source);
-  });
+        const idSet = new Set(normalizedNodes.map((n) => n.id));
 
-  const graph = nodes.map((n) => [
-    n.id,
-    0,
-    Array.from(adjacency.get(n.id) ?? []),
-  ]);
+        // 2) Normalizar aristas crudas (y eliminar las que apunten a nodos inexistentes)
+        const rawEdges = (newEdges || [])
+          .map((e, idx) => {
+            const source = String(e.source);
+            const target = String(e.target);
 
-  const result = manager.executeAlgorithm("las_vegas", graph, K_COLORS, {
-    maxIterations: 2000,
-  });
+            if (!idSet.has(source) || !idSet.has(target)) {
+              console.warn("Arista inválida descartada:", e);
+              return null;
+            }
 
-  if (!result?.coloring) return nodes;
+            return {
+              id: String(e.id ?? `e-${idx}`),
+              source,
+              target,
+              style: { stroke: "#ffffff", strokeWidth: 1.5 },
+            };
+          })
+          .filter(Boolean);
 
-  return nodes.map((n) => {
-    const entry = result.coloring.find((c) => c[0] === n.id);
-    return {
-      ...n,
-      data: {
-        ...n.data,
-        colorIndex: entry ? entry[1] : 0,
+        // 3) ✅ Aplicar límites automáticos a las conexiones
+        const limitedEdges = enforceConnectionLimits(rawEdges);
+
+        setNodes(normalizedNodes);
+        setEdges(limitedEdges);
+
+        if (reactFlowInstance.current) {
+          reactFlowInstance.current.fitView({ padding: 0.2 });
+        }
       },
-    };
-  });
-}
 
-export default function GraphCanvas({ removeMode, setRemoveMode }) {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [historial, setHistorial] = useState([]);
-  const [intentoActual, setIntentoActual] = useState(null);
+      resetGraph: () => {
+        setNodes([]);
+        setEdges([]);
+      },
 
-  // ==========================
-  // CONECTAR NODOS MANUALMENTE
-  // ==========================
+      getGraph: () => ({ nodes, edges }),
+    }),
+    [nodes, edges, setNodes, setEdges]
+  );
+
+  // ===== Conexiones MANUALES: también pasan por enforceConnectionLimits =====
   const onConnect = useCallback(
     (params) => {
+      if (disableOnConnect) return;
+
       setEdges((eds) => {
-        const grados = calcularGrados(nodes, eds);
-        const a = params.source;
-        const b = params.target;
+        const withNew = addEdge(
+          {
+            ...params,
+            style: { stroke: "#ffffff", strokeWidth: 1.5 },
+          },
+          eds
+        );
 
-        if ((grados.get(a) ?? 0) >= 2 || (grados.get(b) ?? 0) >= 2) {
-          alert("Cada nodo puede tener como maximo 2 vecinos.");
-          return eds;
-        }
-
-        const nuevosEdges = addEdge(params, eds);
-
-        // AUTOMATICAMENTE recolorear
-        setNodes((prev) => recalcularColores(prev, nuevosEdges));
-        return nuevosEdges;
+        // ✅ Aplicar el mismo límite cuando conectas a mano
+        return enforceConnectionLimits(withNew);
       });
     },
-    [nodes]
+    [disableOnConnect]
   );
 
-  // ==========================
-  // GENERAR GRAFO AUTOMATICO
-  // ==========================
-  const generarGrafoColoreado = () => {
-  const total = AUTO_NODE_COUNT;
-  const cols = 12;
-  const spacing = 80;
+  // ===== Drag & drop desde la toolbar manual =====
+  const onDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
 
-  const newNodes = Array.from({ length: total }, (_, i) => ({
-    id: String(i + 1),
-    type: "circle",
-    position: {
-      x: 100 + (i % cols) * spacing,
-      y: 80 + Math.floor(i / cols) * spacing,
-    },
-    data: { colorIndex: 0, isManual: false },
-  }));
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      const type = event.dataTransfer.getData("application/reactflow");
+      if (!type) return;
 
-  const adjacency = new Map(newNodes.map(n => [n.id, new Set()]));
-  const newEdges = [];
-  const degree = new Map(newNodes.map(n => [n.id, 0]));
+      if (!reactFlowInstance.current || !wrapperRef.current) return;
 
-  const conectar = (a, b) => {
-    if (!adjacency.get(a).has(b)) {
-      newEdges.push({ id: `e${a}-${b}`, source: a, target: b });
-      adjacency.get(a).add(b);
-      adjacency.get(b).add(a);
-      degree.set(a, degree.get(a) + 1);
-      degree.set(b, degree.get(b) + 1);
-    }
-  };
+      const bounds = wrapperRef.current.getBoundingClientRect();
+      const position = reactFlowInstance.current.project({
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
+      });
 
-  // 1) cadena base
-  for (let i = 1; i < total; i++) {
-    conectar(String(i), String(i + 1));
-  }
-
-  // 2) cerrar ciclo
-  conectar("1", String(total));
-
-  // 3) asegurar MINIMO 3 conexiones en todos EXCEPTO nodo 1
-  let cambios = true;
-  while (cambios) {
-    cambios = false;
-
-    newNodes.forEach(n => {
-      const id = n.id;
-      const objetivo = id === "1" ? 2 : 3;
-
-      if (degree.get(id) < objetivo) {
-        const posible = newNodes[Math.floor(Math.random() * newNodes.length)].id;
-        if (posible !== id) {
-          conectar(id, posible);
-          cambios = true;
-        }
-      }
-    });
-  }
-
-  const colored = recalcularColores(newNodes, newEdges);
-
-  // ✅ guardar intento
-  guardarIntento(colored, newEdges);
-
-  setNodes(colored);
-  setEdges(newEdges);
-};
-
-
-  const guardarIntento = (nodes, edges) => {
-  const snapshot = {
-    fecha: new Date().toLocaleTimeString(),
-    nodes: JSON.parse(JSON.stringify(nodes)),
-    edges: JSON.parse(JSON.stringify(edges)),
-  };
-
-  setHistorial(prev => [...prev, snapshot]);
-  setIntentoActual(historial.length);
-};
-
-  const cargarIntento = (index) => {
-  const intento = historial[index];
-  if (!intento) return;
-  setNodes(intento.nodes);
-  setEdges(intento.edges);
-  setIntentoActual(index);
-};
-
-
-
-  // ==========================
-  // AGREGAR NODO MANUAL
-  // ==========================
-  const agregarNodoManual = () => {
-    setNodes((prevNodes) => {
-      const manualCount = prevNodes.filter((n) => n.data?.isManual).length;
-      if (manualCount >= MAX_MANUAL_NODES) {
-        alert("Maximo 60 nodos manuales.");
-        return prevNodes;
-      }
-
-      const maxId =
-        prevNodes.length === 0
-          ? 0
-          : Math.max(
-              ...prevNodes.map((n) => Number(n.id)).filter((v) => !isNaN(v))
-            );
+      const id = String(nodes.length + 1);
 
       const newNode = {
-        id: String(maxId + 1),
+        id,
         type: "circle",
-        position: {
-          x: 100 + (manualCount % 10) * 80,
-          y: 80 + 10 * 80 + Math.floor(manualCount / 10) * 80,
-        },
-        data: { colorIndex: 0, isManual: true },
+        position,
+        data: {}, // sin número / texto
       };
 
-      const nuevosNodos = [...prevNodes, newNode];
-
-      // AUTOMATICAMENTE recolorear
-      return recalcularColores(nuevosNodos, edges);
-    });
-  };
+      setNodes((prev) => [...prev, newNode]);
+    },
+    [nodes, setNodes]
+  );
 
   return (
-    <div>
-      <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-        <button onClick={generarGrafoColoreado}>
-          Generar grafo automatico (120 nodos)
-        </button>
-        <button onClick={agregarNodoManual}>
-          Agregar nodo manual (max 60)
-        </button>
-      </div>
-
-      <div className="graph-canvas">
-        <div style={{ marginBottom: "8px" }}>
-  <strong>Intentos guardados:</strong>
-  <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-    {historial.map((_, i) => (
-      <button
-        key={i}
-        onClick={() => cargarIntento(i)}
-        style={{
-          background: i === intentoActual ? "#16a085" : "#444",
-          color: "white",
+    <div className="graph-canvas" ref={wrapperRef}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onInit={(instance) => {
+          reactFlowInstance.current = instance;
         }}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        fitView
       >
-        {i + 1}
-      </button>
-    ))}
-  </div>
-</div>
-
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          fitView
-          onConnect={onConnect}
-        >
-          <Background />
-          <Controls />
-        </ReactFlow>
-      </div>
+        <Background />
+        <MiniMap />
+        <Controls />
+      </ReactFlow>
     </div>
   );
-}
+});
+
+GraphCanvas.displayName = "GraphCanvas";
+export default GraphCanvas;
