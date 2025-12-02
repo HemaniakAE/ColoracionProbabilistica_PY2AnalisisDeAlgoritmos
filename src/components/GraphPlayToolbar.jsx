@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import "./GraphPlayToolbar.css";
 import { FaPlay } from "react-icons/fa";
 import { generateRandomGraph } from "../algorithms/graphGenerator";
@@ -29,7 +29,7 @@ const AVAILABLE_COLORS = [
   { value: "gray", label: "⚪ Gris" },
 ];
 
-export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onSelectedAttemptChange }) {
+export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onSelectedAttemptChange, onReset }, ref) {
   const [colorCount, setColorCount] = useState(3);
   const [selectedColors, setSelectedColors] = useState([
     "blue",
@@ -42,6 +42,17 @@ export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onS
   const [attempts, setAttempts] = useState([]);
   const [currentAttemptIndex, setCurrentAttemptIndex] = useState(null);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("las_vegas");
+
+  const clearAttempts = () => {
+    console.log("Clearing attempts in GraphPlayToolbar");
+    setAttempts([]);
+    setCurrentAttemptIndex(null);
+  };
+
+  // Expose clearAttempts to parent via ref
+  useImperativeHandle(ref, () => ({
+    clearAttempts,
+  }), []);
 
   // Ajusta selección si colorCount baja
   useEffect(() => {
@@ -82,6 +93,10 @@ export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onS
   // Ejecutar algoritmo desde Play
   const handlePlayClick = () => {
   if (!graphCanvasRef?.current) return;
+
+  // Capturar el algoritmo seleccionado en este momento
+  const currentAlgorithm = selectedAlgorithm;
+  const algorithmName = currentAlgorithm === "las_vegas" ? "Las Vegas" : "Monte Carlo";
 
   let { nodes, edges } =
     typeof graphCanvasRef.current.getGraph === "function"
@@ -136,7 +151,7 @@ export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onS
   for (let i = 0; i < 50; i++) {
 
     const result = manager.executeAlgorithm(
-      selectedAlgorithm,
+      currentAlgorithm,
       baseGraphForAlgo,
       k,
       { maxIterations: 2000 }
@@ -186,7 +201,7 @@ export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onS
       edges: JSON.parse(JSON.stringify(edges)),
       palette: [...selectedColors],
       k,
-      algorithm: selectedAlgorithm === "las_vegas" ? "Las Vegas" : "Monte Carlo",
+      algorithm: algorithmName,
       ...iterationData,
       // Datos para gráficas de conflictos por iteración
       conflictsByIteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => 
@@ -335,4 +350,4 @@ export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onS
       </div>
     </div>
   );
-}
+});

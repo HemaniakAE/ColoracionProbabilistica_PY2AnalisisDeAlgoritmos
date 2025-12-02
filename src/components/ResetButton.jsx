@@ -1,12 +1,21 @@
 import { PiGraphBold } from "react-icons/pi";
 import './ResetButton.css'
-import { useNavigate } from "react-router-dom";
 
-export default function ResetButton() {
-    const navigate = useNavigate();
+export default function ResetButton({ onReset }) {
+    const handleReset = () => {
+        console.log("ResetButton clicked, onReset:", onReset);
+        if (onReset) {
+            console.log("Calling onReset...");
+            onReset();
+            console.log("onReset completed");
+        } else {
+            console.log("onReset is not defined");
+        }
+    };
+
     return(
-        <button className="reset-button">
-            <div className="reset-button-logo" onClick={() => navigate("/")} >   
+        <button className="reset-button" onClick={handleReset}>
+            <div className="reset-button-logo">   
                 <PiGraphBold size={48} />
             </div> 
         </button>

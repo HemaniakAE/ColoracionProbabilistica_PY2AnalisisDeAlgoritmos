@@ -1,51 +1,24 @@
 .reset-button {
-    cursor: default;
+    cursor: pointer;
     background: transparent;
     height: 5vh;
     border: 1px solid transparent;
-  animation: rainbowText 6s linear infinite;
+    animation: rainbowText 6s linear infinite;
+    transition: transform 0.3s ease;
 }
 
-@keyframes rainbowText {
-  0% {
-    color: red;
-  }
-  14% {
-    color: orange;
-  }
-  28% {
-    color: yellow;
-  }
-  42% {
-    color: green;
-  }
-  57% {
-    color: cyan;
-  }
-  71% {
-    color: blue;
-  }
-  85% {
-    color: violet;
-  }
-  100% {
-    color: red;
-  }
-}
-
-.reset-button:hover {
-    border: 1px solid transparent;
+.reset-button:active {
+    transform: scale(0.9);
 }
 
 .reset-button:focus,
-.reset-button:active,
 .reset-button:focus-visible {
     outline: none;
     border: none;
 }
 
 .reset-button-logo {
-    cursor: default;
+    cursor: pointer;
     transition: transform 0.5s ease;
 }
 
