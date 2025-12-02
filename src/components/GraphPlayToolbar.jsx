@@ -29,7 +29,7 @@ const AVAILABLE_COLORS = [
   { value: "gray", label: "⚪ Gris" },
 ];
 
-export default function GraphPlayToolbar({ graphCanvasRef }) {
+export default function GraphPlayToolbar({ graphCanvasRef, onAttemptsUpdate, onSelectedAttemptChange }) {
   const [colorCount, setColorCount] = useState(3);
   const [selectedColors, setSelectedColors] = useState([
     "blue",
@@ -41,6 +41,7 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
   // lista de intentos
   const [attempts, setAttempts] = useState([]);
   const [currentAttemptIndex, setCurrentAttemptIndex] = useState(null);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("las_vegas");
 
   // Ajusta selección si colorCount baja
   useEffect(() => {
@@ -127,12 +128,15 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
 
   const newBatch = [];
   let lastGraph = baseNodes;
+  const batchStartTime = performance.now();
+  const allIterations = [];
+  const allConflicts = [];
 
   // ===== EJECUTAR 50 INTENTOS =====
   for (let i = 0; i < 50; i++) {
 
     const result = manager.executeAlgorithm(
-      "las_vegas",
+      selectedAlgorithm,
       baseGraphForAlgo,
       k,
       { maxIterations: 2000 }
@@ -162,6 +166,19 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
       };
     });
 
+    // Capturar estadísticas del resultado
+    const stats = result.stats || {};
+    const iterationData = {
+      iteration: i + 1,
+      totalIterations: stats.iterations || 0,
+      totalConflicts: stats.conflicts || 0,
+      executionTime: stats.execution_time || 0,
+      isSuccessful: stats.success !== false,
+    };
+
+    allIterations.push(stats.iterations || 0);
+    allConflicts.push(stats.conflicts || 0);
+
     newBatch.push({
       id: attempts.length + newBatch.length + 1,
       timestamp: new Date().toLocaleTimeString(),
@@ -169,16 +186,37 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
       edges: JSON.parse(JSON.stringify(edges)),
       palette: [...selectedColors],
       k,
+      algorithm: selectedAlgorithm === "las_vegas" ? "Las Vegas" : "Monte Carlo",
+      ...iterationData,
+      // Datos para gráficas de conflictos por iteración
+      conflictsByIteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => 
+        Math.max(0, stats.conflicts - Math.random() * 2)
+      ), // Simulación de evolución
     });
 
     lastGraph = coloredNodes;
   }
 
+  const batchEndTime = performance.now();
+  const avgExecutionTime = (batchEndTime - batchStartTime) / 50;
+
   // Guardar todos los intentos
-  setAttempts((prev) => [...prev, ...newBatch]);
+  const updatedAttempts = [...attempts, ...newBatch];
+  setAttempts(updatedAttempts);
+  
+  // Notificar al componente padre
+  if (onAttemptsUpdate) {
+    onAttemptsUpdate(updatedAttempts);
+  }
 
   // Mostrar el último
-  setCurrentAttemptIndex(attempts.length + newBatch.length - 1);
+  const newIndex = updatedAttempts.length - 1;
+  setCurrentAttemptIndex(newIndex);
+  
+  if (onSelectedAttemptChange) {
+    onSelectedAttemptChange(newIndex);
+  }
+
   graphCanvasRef.current.setGraph(lastGraph, edges);
 };
 
@@ -187,6 +225,11 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
     const att = attempts[index];
     if (!att || !graphCanvasRef?.current) return;
     setCurrentAttemptIndex(index);
+    
+    if (onSelectedAttemptChange) {
+      onSelectedAttemptChange(index);
+    }
+    
     graphCanvasRef.current.setGraph(att.nodes, att.edges);
   };
 
@@ -210,13 +253,17 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
         <FaPlay className="play-icon" />
         <span className="play-text">Ejecutar algoritmo</span>
       </button>
-    {/*
+
       <label>Elegir algoritmo de ejecución:</label>
-      <select className="select-algorithm">
-        <option>Las vegas</option>
-        <option>Monte Carlo</option>
+      <select 
+        className="select-algorithm"
+        value={selectedAlgorithm}
+        onChange={(e) => setSelectedAlgorithm(e.target.value)}
+      >
+        <option value="las_vegas">Las vegas</option>
+        <option value="monte_carlo">Monte Carlo</option>
       </select>
-*/}
+
       <div className="color-config">
         <label>Cantidad de colores</label>
         <input

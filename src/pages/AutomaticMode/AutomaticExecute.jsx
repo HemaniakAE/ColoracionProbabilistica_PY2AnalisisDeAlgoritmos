@@ -4,10 +4,13 @@ import Header from "../../components/Header";
 import GraphCanvas from "../../components/GraphCanvas";
 import GraphToolbar from "../../components/GraphToolBar";
 import GraphPlayToolbar from "../../components/GraphPlayToolbar";
+import AlgorithmStatsPanel from "../../components/AlgorithmStatsPanel";
 
 function AutomaticMode() {
   const [removeMode, setRemoveMode] = useState(false);
   const graphCanvasRef = useRef(null);
+  const [attempts, setAttempts] = useState([]);
+  const [selectedAttemptIndex, setSelectedAttemptIndex] = useState(null);
 
   const enableRemoveMode = () => {
     setRemoveMode(true);
@@ -25,15 +28,20 @@ function AutomaticMode() {
             setRemoveMode={setRemoveMode}
             disableOnConnect={true}
           />
+          {/* Panel de estadísticas debajo del canvas */}
+          <AlgorithmStatsPanel 
+            attempts={attempts} 
+            selectedAttemptIndex={selectedAttemptIndex}
+          />
         </div>
         <div className="top-right">
           {/*<GraphToolbar onDeleteNodes={enableRemoveMode} />*/}
-          <GraphPlayToolbar graphCanvasRef={graphCanvasRef} />
+          <GraphPlayToolbar 
+            graphCanvasRef={graphCanvasRef}
+            onAttemptsUpdate={setAttempts}
+            onSelectedAttemptChange={setSelectedAttemptIndex}
+          />
         </div>
-      </div>
-
-      <div className="bottom-side">
-        <h2>Automatic</h2>
       </div>
     </>
   );
