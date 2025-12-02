@@ -1,4 +1,9 @@
-import { useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from "react";
+import {
+  useCallback,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -12,16 +17,42 @@ import "reactflow/dist/style.css";
 import "./GraphCanvas.css";
 import CircleNode from "./CircleNode";
 
-let id = 0;
-const getId = () => `node_${id++}`;
-
-// Definir nodeTypes fuera del componente
 const nodeTypes = { circle: CircleNode };
 
-const GraphCanvas = forwardRef(({ removeMode, setRemoveMode, disableOnConnect = false }, ref) => {
-  const reactFlowWrapper = useRef(null);
+/**
+ * ✅ VALIDACIÓN AUTOMÁTICA DE CONEXIONES
+ * - Nodo "1": máximo 2 conexiones
+ * - Todos los demás nodos: máximo 3 conexiones
+ */
+function enforceConnectionLimits(edges) {
+  const degree = new Map();
+  const filtered = [];
+
+  edges.forEach((e) => {
+    const a = String(e.source);
+    const b = String(e.target);
+
+    const da = degree.get(a) || 0;
+    const db = degree.get(b) || 0;
+
+    const maxA = a === "1" ? 2 : 3;
+    const maxB = b === "1" ? 2 : 3;
+
+    // Solo permitimos la arista si ambos nodos aún están debajo de su límite
+    if (da < maxA && db < maxB) {
+      filtered.push(e);
+      degree.set(a, da + 1);
+      degree.set(b, db + 1);
+    }
+  });
+
+  return filtered;
+}
+
+const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const wrapperRef = useRef(null);
   const reactFlowInstance = useRef(null);
 
   // Exponer métodos para controlar el grafo desde el exterior
@@ -113,46 +144,95 @@ const GraphCanvas = forwardRef(({ removeMode, setRemoveMode, disableOnConnect = 
     getGraph: () => ({ nodes: reactFlowInstance.current ? reactFlowInstance.current.getNodes() : [], edges: reactFlowInstance.current ? reactFlowInstance.current.getEdges() : [] }),
   }), [setNodes, setEdges]);
 
-  // Manejar click en nodos
-  const handleNodeClick = useCallback((event, node) => {
-    if (removeMode) {
-      setNodes((nds) => nds.filter((n) => n.id !== node.id));
-      setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
-      setRemoveMode(false);
-    }
-  }, [removeMode, setNodes, setEdges, setRemoveMode]);
+  // ===== API imperativa para AutomaticExecute / PlayToolbar =====
+  useImperativeHandle(
+    ref,
+    () => ({
+      /**
+       * Recibe nodos y aristas desde el algoritmo / toolbar y
+       * los normaliza + aplica límites de conexiones.
+       */
+      setGraph: (newNodes = [], newEdges = []) => {
+        // 1) Normalizar nodos
+        const normalizedNodes = newNodes.map((n, idx) => {
+          const id = String(n.id ?? idx + 1);
+          return {
+            id,
+            type: "circle",
+            position:
+              n.position ?? {
+                x: 100 + (idx % 15) * 70,
+                y: 80 + Math.floor(idx / 15) * 70,
+              },
+            data: n.data ?? {},
+          };
+        });
 
-  // Manejar click en el canvas vacío
-  const handlePaneClick = useCallback(() => {
-    if (removeMode) {
-      setRemoveMode(false);
-    }
-  }, [removeMode, setRemoveMode]);
+        const idSet = new Set(normalizedNodes.map((n) => n.id));
 
-  // Logs para depuración: monitorizar cambios en nodes/edges e instancia
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('GraphCanvas state change -> nodes:', nodes.length, 'edges:', edges.length);
-  }, [nodes, edges]);
+        // 2) Normalizar aristas crudas (y eliminar las que apunten a nodos inexistentes)
+        const rawEdges = (newEdges || [])
+          .map((e, idx) => {
+            const source = String(e.source);
+            const target = String(e.target);
 
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('GraphCanvas reactFlowInstance ready?', !!reactFlowInstance.current);
-    if (reactFlowInstance.current) {
-      try {
-        // eslint-disable-next-line no-console
-        console.log('reactFlowInstance nodes count:', reactFlowInstance.current.getNodes().length);
-        // eslint-disable-next-line no-console
-        console.log('reactFlowInstance edges count:', reactFlowInstance.current.getEdges().length);
-        // eslint-disable-next-line no-console
-        console.log('reactFlowInstance sample edge:', reactFlowInstance.current.getEdges()[0] ?? null);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('Error reading from reactFlowInstance', err);
-      }
-    }
-  }, [reactFlowInstance.current]);
+            if (!idSet.has(source) || !idSet.has(target)) {
+              console.warn("Arista inválida descartada:", e);
+              return null;
+            }
 
+            return {
+              id: String(e.id ?? `e-${idx}`),
+              source,
+              target,
+              style: { stroke: "#ffffff", strokeWidth: 1.5 },
+            };
+          })
+          .filter(Boolean);
+
+        // 3) ✅ Aplicar límites automáticos a las conexiones
+        const limitedEdges = enforceConnectionLimits(rawEdges);
+
+        setNodes(normalizedNodes);
+        setEdges(limitedEdges);
+
+        if (reactFlowInstance.current) {
+          reactFlowInstance.current.fitView({ padding: 0.2 });
+        }
+      },
+
+      resetGraph: () => {
+        setNodes([]);
+        setEdges([]);
+      },
+
+      getGraph: () => ({ nodes, edges }),
+    }),
+    [nodes, edges, setNodes, setEdges]
+  );
+
+  // ===== Conexiones MANUALES: también pasan por enforceConnectionLimits =====
+  const onConnect = useCallback(
+    (params) => {
+      if (disableOnConnect) return;
+
+      setEdges((eds) => {
+        const withNew = addEdge(
+          {
+            ...params,
+            style: { stroke: "#ffffff", strokeWidth: 1.5 },
+          },
+          eds
+        );
+
+        // ✅ Aplicar el mismo límite cuando conectas a mano
+        return enforceConnectionLimits(withNew);
+      });
+    },
+    [disableOnConnect]
+  );
+
+  // ===== Drag & drop desde la toolbar manual =====
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -161,73 +241,51 @@ const GraphCanvas = forwardRef(({ removeMode, setRemoveMode, disableOnConnect = 
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
-
       const type = event.dataTransfer.getData("application/reactflow");
       if (!type) return;
 
-      const bounds = reactFlowWrapper.current.getBoundingClientRect();
+      if (!reactFlowInstance.current || !wrapperRef.current) return;
 
-      const position = reactFlowInstance.current.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+      const bounds = wrapperRef.current.getBoundingClientRect();
+      const position = reactFlowInstance.current.project({
+        x: event.clientX - bounds.left,
+        y: event.clientY - bounds.top,
       });
 
+      const id = String(nodes.length + 1);
+
       const newNode = {
-        id: getId(),
+        id,
         type: "circle",
         position,
-        data: { label: nodes.length + 1 },
+        data: {}, // sin número / texto
       };
 
-      setNodes((nds) => nds.concat(newNode));
+      setNodes((prev) => [...prev, newNode]);
     },
-    [setNodes, nodes, reactFlowInstance]
-  );
-
-  const onConnect = useCallback(
-    (params) => {
-      if (disableOnConnect) {
-        // eslint-disable-next-line no-console
-        console.warn('GraphCanvas: onConnect ignored in programmatic mode', params);
-        return;
-      }
-      setEdges((eds) => addEdge(params, eds));
-    },
-    [setEdges, disableOnConnect]
+    [nodes, setNodes]
   );
 
   return (
-    <div className="graph-canvas-wrapper" ref={reactFlowWrapper}>
-      <div 
-        className="graph-canvas" 
-        style={{ cursor: removeMode ? 'not-allowed' : 'default' }}
+    <div className="graph-canvas" ref={wrapperRef}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onInit={(instance) => {
+          reactFlowInstance.current = instance;
+        }}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        fitView
       >
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect} 
-          onNodeClick={handleNodeClick}
-          onPaneClick={handlePaneClick}
-          onInit={(instance) => (reactFlowInstance.current = instance)}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          fitView
-          minZoom={0.2}
-          maxZoom={1.5}
-          panOnScroll
-          zoomOnPinch
-          nodeTypes={nodeTypes}
-          nodesDraggable={!removeMode}
-          nodesConnectable={!removeMode}
-          elementsSelectable={!removeMode}
-        >
-          <Background gap={20} size={1} />
-          <Controls />
-          <MiniMap />
-        </ReactFlow>
-      </div>
+        <Background />
+        <MiniMap />
+        <Controls />
+      </ReactFlow>
     </div>
   );
 });

@@ -50,7 +50,7 @@
 /* Estilos para aristas personalizadas (contraste blanco) */
 .white-edge .react-flow__edge-path {
   stroke: #ffffff !important;
-  stroke-width: 10px !important;
+  stroke-width: 4px !important;
   stroke-linecap: round !important;
   opacity: 0.95 !important;
 }
@@ -58,14 +58,15 @@
 /* Reglas de respaldo para asegurar visibilidad de aristas generadas */
 .react-flow__edge-path {
   stroke: #ffffff !important;
-  stroke-width: 10px !important;
+  stroke-width: 1.5px !important;
 }
 
+
 /* Asegurar que las rutas SVG no capten eventos y queden detrás de nodos */
-.react-flow__edge path,
-.react-flow__edge-path {
+.react-flow__edge path {
   pointer-events: none !important;
 }
+
 
 @media (prefers-color-scheme: light) {
   .graph-canvas {
