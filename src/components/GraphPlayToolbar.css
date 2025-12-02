@@ -262,6 +262,18 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.attempt-button {
+  background: transparent;
+  transition: transform 0.2s ease;
+}
+
+.attempt-button:hover {
+  transform: scale(1.04);
+}
+
+
+
+
 /* Ajustes mobile */
 @media (max-width: 480px) {
   .color-options {
