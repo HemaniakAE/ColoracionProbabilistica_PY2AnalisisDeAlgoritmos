@@ -108,7 +108,13 @@ export default function GraphPlayToolbar({ graphCanvasRef }) {
         <FaPlay className="play-icon" />
         <span className="play-text">Ejecutar algoritmo</span>
       </button>
-
+    {/*
+      <label>Elegir algoritmo de ejecución:</label>
+      <select className="select-algorithm">
+        <option>Las vegas</option>
+        <option>Monte Carlo</option>
+      </select>
+*/}
       <div className="color-config">
         <label>Cantidad de colores</label>
         <input
