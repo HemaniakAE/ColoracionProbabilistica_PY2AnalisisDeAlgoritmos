@@ -2,6 +2,7 @@ import { Handle, Position } from "reactflow";
 
 export default function CircleNode({ data }) {
   const color = data?.displayColor || "#3498db";
+  const isSelected = data?.isSelected || false;
 
   return (
     <div
@@ -10,8 +11,10 @@ export default function CircleNode({ data }) {
         height: 40,
         borderRadius: "50%",
         backgroundColor: color,
-        border: "2px solid #000",
+        border: isSelected ? "3px solid #fff700" : "2px solid #000",
         position: "relative",
+        boxShadow: isSelected ? "0 0 15px 3px rgba(255, 247, 0, 0.8)" : "none",
+        transition: "all 0.2s ease",
       }}
     >
       {/* ARRIBA */}

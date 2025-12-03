@@ -9,6 +9,7 @@ import AlgorithmStatsPanel from "../../components/AlgorithmStatsPanel";
 function AutomaticMode() {
   const [removeMode, setRemoveMode] = useState(false);
   const [selectedColors, setSelectedColors] = useState(["blue", "green", "yellow"]);
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
   const graphCanvasRef = useRef(null);
   const graphPlayToolbarRef = useRef(null);
   const [attempts, setAttempts] = useState([]);
@@ -19,9 +20,14 @@ function AutomaticMode() {
   };
 
   const handleRotateAllColors = () => {
-    if (graphCanvasRef.current && graphCanvasRef.current.rotateColors) {
-      graphCanvasRef.current.rotateColors(selectedColors);
-      console.log("✅ Colores rotados en todos los nodos");
+    if (!selectedNodeId) {
+      alert("Selecciona un nodo primero haciendo clic en él");
+      return;
+    }
+
+    if (graphCanvasRef.current && graphCanvasRef.current.rotateNodeColor) {
+      graphCanvasRef.current.rotateNodeColor(selectedNodeId, selectedColors);
+      console.log(`✅ Color rotado en nodo ${selectedNodeId}`);
     }
   };
 
@@ -73,6 +79,8 @@ function AutomaticMode() {
             setRemoveMode={setRemoveMode}
             disableOnConnect={true}
             selectedColors={selectedColors}
+            selectedNodeId={selectedNodeId}
+            onNodeSelect={setSelectedNodeId}
           />
           {/* Panel de estadísticas debajo del canvas */}
           <AlgorithmStatsPanel 
@@ -86,6 +94,7 @@ function AutomaticMode() {
             removeMode={removeMode}
             onRotateColors={handleRotateAllColors}
             selectedColors={selectedColors}
+            selectedNodeId={selectedNodeId}
           />
           <GraphPlayToolbar 
             ref={graphPlayToolbarRef}

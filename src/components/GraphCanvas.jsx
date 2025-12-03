@@ -79,7 +79,7 @@ function detectConflictEdges(nodes, edges) {
   return conflictEdges;
 }
 
-const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false, selectedColors = [] }, ref) => {
+const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false, selectedColors = [], selectedNodeId = null, onNodeSelect = null }, ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [conflictEdges, setConflictEdges] = useState(new Set());
@@ -241,8 +241,23 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false, 
         edge.source !== node.id && edge.target !== node.id
       ));
       console.log(`✅ Nodo ${node.id} eliminado`);
+    } else {
+      // Seleccionar el nodo si no estamos en modo eliminación
+      if (onNodeSelect) {
+        onNodeSelect(node.id);
+        console.log(`✅ Nodo ${node.id} seleccionado para rotar color`);
+      }
+      
+      // Resaltar el nodo seleccionado
+      setNodes(prev => prev.map(n => ({
+        ...n,
+        data: {
+          ...n.data,
+          isSelected: String(n.id) === String(node.id)
+        }
+      })));
     }
-  }, [removeMode, setNodes, setEdges]);
+  }, [removeMode, setNodes, setEdges, onNodeSelect]);
 
   const onDragOver = useCallback((event) => {
     event.preventDefault();

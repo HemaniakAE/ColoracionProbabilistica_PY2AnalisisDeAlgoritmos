@@ -3,7 +3,7 @@ import { RiAddCircleFill } from "react-icons/ri";
 import { IoMdRemoveCircle } from "react-icons/io";
 import { MdLoop } from "react-icons/md";
 
-export default function GraphToolbar({ onDeleteNodes, removeMode = false, onRotateColors, selectedColors = [] }) {
+export default function GraphToolbar({ onDeleteNodes, removeMode = false, onRotateColors, selectedColors = [], selectedNodeId = null }) {
   const onDragStart = (event) => {
     event.dataTransfer.setData("application/reactflow", "circle");
     event.dataTransfer.effectAllowed = "move";
@@ -44,11 +44,19 @@ export default function GraphToolbar({ onDeleteNodes, removeMode = false, onRota
       <button 
         className='rotate-colors-button'
         onClick={onRotateColors}
-        disabled={!selectedColors || selectedColors.length < 2}
-        title={selectedColors && selectedColors.length >= 2 ? "Rotar colores en todos los nodos" : "Necesitas al menos 2 colores seleccionados"}
+        disabled={!selectedColors || selectedColors.length < 2 || !selectedNodeId}
+        title={
+          !selectedNodeId 
+            ? "Selecciona un nodo primero"
+            : selectedColors && selectedColors.length >= 2 
+              ? `Rotar colores en nodo ${selectedNodeId}`
+              : "Necesitas al menos 2 colores seleccionados"
+        }
       >
         <MdLoop className='rotate-icon' />
-        <span className='rotate-text'>Rotar colores</span>
+        <span className='rotate-text'>
+          {selectedNodeId ? `Rotar (Nodo ${selectedNodeId})` : "Seleccionar nodo"}
+        </span>
       </button>
 
       {removeMode && (
