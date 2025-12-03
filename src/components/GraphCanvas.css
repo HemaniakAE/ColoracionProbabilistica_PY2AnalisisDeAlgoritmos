@@ -1,0 +1,149 @@
+.graph-canvas-wrapper {
+  margin-top: 2rem; 
+  padding: 0 1rem;
+}
+
+.graph-canvas {
+  width: 120vh;
+  height: 80vh; 
+  background: radial-gradient(circle at 20% 20%, #232329, #1f1e1e);
+  border: 2px solid #6a6a6d;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.react-flow__minimap {
+  background: rgba(63, 63, 70, 0.85) !important;
+  border: 1px solid #444;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.6);
+}
+
+.react-flow__panel.react-flow__controls {
+  background: rgba(20, 20, 25, 0.85) !important;
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 6px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid #444;
+}
+
+.react-flow__controls button {
+  background: transparent !important;
+  border: none !important;
+  color: #d1d1d1 !important;
+}
+
+.react-flow__controls button svg {
+  fill: #d1d1d1 !important;
+  transition: transform 0.2s ease, fill 0.2s ease;
+}
+
+.react-flow__controls button:hover svg {
+  fill: #8b5cf6 !important;
+  transform: scale(1.1);
+}
+
+/* Estilos para aristas personalizadas (contraste blanco) */
+.white-edge .react-flow__edge-path {
+  stroke: #ffffff !important;
+  stroke-width: 4px !important;
+  stroke-linecap: round !important;
+  opacity: 0.95 !important;
+}
+
+/* Estilos para aristas en conflicto (rojo grueso) */
+.conflict-edge .react-flow__edge-path {
+  stroke: #ff0000 !important;
+  stroke-width: 4px !important;
+  stroke-linecap: round !important;
+  opacity: 1 !important;
+}
+
+/* Reglas de respaldo para asegurar visibilidad de aristas generadas */
+.react-flow__edge-path {
+  stroke: #ffffff !important;
+  stroke-width: 1.5px !important;
+}
+
+
+/* Asegurar que las rutas SVG no capten eventos y queden detrás de nodos */
+.react-flow__edge path {
+  pointer-events: none !important;
+}
+
+
+@media (prefers-color-scheme: light) {
+  .graph-canvas {
+    background: radial-gradient(circle at 20% 20%, #f5f5f7, #e3e3e6);
+    border: 2px solid #bcbcc2;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.08);
+  }
+  .react-flow__minimap {
+    background: rgba(165, 165, 170, 0.9) !important;
+    border-radius: 12px;
+    border: 1px solid #c5c5d0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .react-flow__minimap-mask {
+    fill: rgba(0, 0, 0, 0.15);
+  }
+
+  .react-flow__panel.react-flow__controls {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #d3d3df;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .react-flow__controls button svg {
+    fill: #444 !important;
+  }
+
+  .react-flow__controls button:hover svg {
+    fill: #4f46e5 !important;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .graph-canvas-wrapper {
+    margin-top: 5rem;
+    padding: 0 0.5rem;
+  }
+
+  .graph-canvas {
+    height: 75vh;
+    border-radius: 12px;
+    top: 0;
+  }
+
+  /* Minimapa más pequeño y discreto */
+  .react-flow__minimap {
+    transform: scale(0.8);
+    transform-origin: bottom left;
+    border-radius: 10px;
+  }
+
+  /* Panel de controles más compacto */
+  .react-flow__panel.react-flow__controls {
+    padding: 4px;
+    border-radius: 10px;
+  }
+
+  /* Botones más pequeños */
+  .react-flow__controls button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .react-flow__controls button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+}
+

@@ -1,0 +1,43 @@
+.reset-button {
+    cursor: pointer;
+    background: transparent;
+    height: 5vh;
+    border: 1px solid transparent;
+    animation: rainbowText 6s linear infinite;
+    transition: transform 0.3s ease;
+}
+
+.reset-button:active {
+    transform: scale(0.9);
+}
+
+.reset-button:focus,
+.reset-button:focus-visible {
+    outline: none;
+    border: none;
+}
+
+.reset-button-logo {
+    cursor: pointer;
+    transition: transform 0.5s ease;
+}
+
+.reset-button-logo:active {
+    transform: scale(0.9);
+}
+
+@media (prefers-color-scheme: light) {
+    .reset-button {
+        color: #14141488;
+    }
+}
+
+@media (max-width: 480px) {
+  .reset-button {
+    height: 44px; /* estándar touch */
+  }
+
+  .reset-button-logo {
+    transform: scale(0.95);
+  }
+}

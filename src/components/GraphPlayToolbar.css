@@ -1,0 +1,506 @@
+.graph-play-toolbar {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.85),
+    rgba(26, 26, 29, 0.85)
+  );
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(63, 60, 60, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+  border-radius: 12px;
+  width: 28vh;
+  height: auto;
+  margin-right: 8vh;
+}
+
+/* Título arcoíris */
+.graph-play-toolbar h3 {
+  background: linear-gradient(
+    90deg,
+    red,
+    orange,
+    yellow,
+    green,
+    cyan,
+    blue,
+    violet
+  );
+  margin-top: 0.2px;
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow 6s ease infinite;
+  margin-bottom: 10px;
+  font-size: 4vh;
+}
+
+/* Botón PLAY */
+.graph-play-toolbar .play-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: rgba(40, 40, 40, 0.9);
+  border: none;
+  color: white;
+  padding: 10px;
+  gap: 4vh;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.graph-play-toolbar .play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.graph-play-toolbar .play-button:active {
+  background: rgba(54, 54, 54, 0.9);
+}
+
+.play-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.play-icon {
+  font-size: 1.5rem;
+  margin-left: 1vh;
+}
+
+.play-text {
+  color: white;
+  font-weight: 500;
+}
+
+/* Configuración de colores */
+.color-config {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.color-config label,
+.color-select label {
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+/* Input numérico */
+.color-config input {
+  background: rgba(40, 40, 40, 0.9);
+  border: 1px solid rgba(90, 90, 90, 0.6);
+  border-radius: 6px;
+  padding: 6px;
+  color: white;
+}
+
+/* Contenedor de opciones (sustituye al select) */
+.color-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 6px;
+}
+
+/* Animación de límite alcanzado */
+.color-grid.limit-hit {
+  animation: shake 0.5s;
+  border-radius: 8px;
+}
+@keyframes shake {
+  10% {
+    transform: translateX(-4px);
+  }
+  30% {
+    transform: translateX(4px);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+  70% {
+    transform: translateX(3px);
+  }
+  90% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Grid de opciones */
+.color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Cada "option" estilada como botón */
+.color-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(40, 40, 40, 0.7);
+  color: white;
+  cursor: pointer;
+  min-width: 96px;
+  justify-content: space-between;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  font-weight: 600;
+}
+
+/* Hover */
+.color-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+/* Visual cuando está seleccionado */
+.color-option.selected {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  transform: translateY(-3px);
+  outline: 2px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Checkmark pequeño */
+.color-option .checkmark {
+  margin-left: 8px;
+  opacity: 0.95;
+  font-size: 0.95rem;
+}
+
+/* Emoji y nombre */
+.color-emoji {
+  font-size: 1.15rem;
+  margin-right: 6px;
+}
+.color-name {
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+
+/* Contador pequeño */
+.color-counter {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 6px;
+}
+
+/* Colores tenues por fondo: usa rgba para no ser agresivos */
+.color-option.blue {
+  background: linear-gradient(
+    180deg,
+    rgba(3, 169, 244, 0.12),
+    rgba(3, 169, 244, 0.06)
+  );
+  color: white;
+}
+.color-option.green {
+  background: linear-gradient(
+    180deg,
+    rgba(76, 175, 80, 0.12),
+    rgba(76, 175, 80, 0.06)
+  );
+  color: white;
+}
+.color-option.yellow {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 235, 59, 0.12),
+    rgba(255, 235, 59, 0.06)
+  );
+  color: rgba(255, 255, 255, 0.9);
+}
+.color-option.purple {
+  background: linear-gradient(
+    180deg,
+    rgba(156, 39, 176, 0.12),
+    rgba(156, 39, 176, 0.06)
+  );
+  color: white;
+}
+.color-option.orange {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 152, 0, 0.12),
+    rgba(255, 152, 0, 0.06)
+  );
+  color: rgba(255, 255, 255, 0.9);
+}
+.color-option.cyan {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 188, 212, 0.12),
+    rgba(0, 188, 212, 0.06)
+  );
+  color: white;
+}
+.color-option.pink {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 64, 129, 0.12),
+    rgba(255, 64, 129, 0.06)
+  );
+  color: white;
+}
+.color-option.gray {
+  background: linear-gradient(
+    180deg,
+    rgba(200, 200, 200, 0.08),
+    rgba(200, 200, 200, 0.03)
+  );
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.attempt-button {
+  background: transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.attempt-button:hover {
+  transform: scale(1.04);
+}
+
+.attempt-button.has-conflicts {
+  border-color: #ff4444 !important;
+  color: #ff6666 !important;
+}
+
+.attempt-button.has-conflicts:hover {
+  background: rgba(255, 68, 68, 0.1) !important;
+  border-color: #ff6666 !important;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
+}
+
+.attempt-button.best-attempt {
+  border-color: #ffb800 !important;
+  color: #ffd700 !important;
+  background: rgba(255, 184, 0, 0.05) !important;
+}
+
+.attempt-button.best-attempt:hover {
+  background: rgba(255, 184, 0, 0.15) !important;
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.4) !important;
+}
+
+.conflict-badge {
+  margin-left: 4px;
+  font-size: 0.9rem;
+  display: inline-block;
+  animation: conflictFlash 1.5s ease-in-out infinite;
+}
+
+.best-badge {
+  margin-left: 4px;
+  font-size: 0.9rem;
+  display: inline-block;
+  animation: bestPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes conflictFlash {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bestPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.15);
+  }
+}
+
+.select-algorithm {
+  background: rgba(40, 40, 40, 0.9);
+  width: 100%;
+  height: 3vh;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+}
+
+/* Opciones select y controles */
+.option-select {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  gap: 4px;
+}
+
+.option-select label {
+  color: white;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.select-valid-solution {
+  background: rgba(40, 40, 40, 0.9);
+  border: 1px solid rgba(90, 90, 90, 0.6);
+  border-radius: 6px;
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.select-valid-solution:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(50, 50, 50, 0.9);
+}
+
+.select-valid-solution:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+.select-attempts {
+  background: rgba(40, 40, 40, 0.9);
+  border: 1px solid rgba(90, 90, 90, 0.6);
+  border-radius: 6px;
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.select-attempts:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(50, 50, 50, 0.9);
+}
+
+.select-attempts:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* Slider de probabilidad */
+.probability-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(40, 40, 40, 0.9);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.probability-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+  transition: all 0.2s ease;
+}
+
+.probability-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+}
+
+.probability-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+  transition: all 0.2s ease;
+}
+
+.probability-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.probability-slider::-moz-range-track {
+  background: none;
+  border: none;
+}
+
+.probability-value {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+/* Spinner giratorio */
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Texto debajo del spinner */
+.loading-text {
+  margin-top: 20px;
+  color: white;
+  font-size: 18px;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Animación de rotación */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+/* Ajustes mobile */
+@media (max-width: 480px) {
+  .color-options {
+    gap: 6px;
+  }
+  .color-option {
+    min-width: 72px;
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+  .play-text {
+    font-size: 0.9rem;
+  }
+}
