@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./ManualExecute.css";
 import Header from "../../components/Header";
 import GraphCanvas from "../../components/GraphCanvas";
@@ -7,9 +7,17 @@ import GraphPlayToolbar from "../../components/GraphPlayToolbar";
 
 function ManualExecute() {
   const [removeMode, setRemoveMode] = useState(false);
+  const graphCanvasRef = useRef(null); // ✅ REF agregada aquí
+  const graphPlayToolbarRef = useRef(null);
 
   const enableRemoveMode = () => {
     setRemoveMode(true);
+  };
+
+  const handleReset = () => {
+    if (graphPlayToolbarRef.current) {
+      graphPlayToolbarRef.current.clearAttempts();
+    }
   };
 
   return (
@@ -19,13 +27,18 @@ function ManualExecute() {
       <div className="top-side">
         <div className="top-left">
           <GraphCanvas 
+            ref={graphCanvasRef} // ✅ Pasar ref aquí
             removeMode={removeMode}
             setRemoveMode={setRemoveMode}
           />
         </div>
         <div className="top-right">
           <GraphToolbar onDeleteNodes={enableRemoveMode} />
-          <GraphPlayToolbar />
+          <GraphPlayToolbar 
+            ref={graphPlayToolbarRef}
+            graphCanvasRef={graphCanvasRef} // ✅ Pasar ref aquí
+            onReset={handleReset}
+          />
         </div>
       </div>
 
