@@ -2,11 +2,21 @@ import { useState, useEffect, useMemo } from "react";
 import "./AlgorithmStatsPanel.css";
 import StatsChart from "./StatsChart";
 
+/**
+ * Panel que muestra estadísticas de ejecución de algoritmos de coloración.
+ *
+ * @param {Object} props
+ * @param {Array<Object>} props.attempts - Lista de intentos ejecutados por los algoritmos.
+ * @param {number|null} props.selectedAttemptIndex - Índice del intento seleccionado.
+ */
 export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptIndex = null }) {
   const [stats, setStats] = useState(null);
   const [comparisonData, setComparisonData] = useState({});
 
-  // Calcular estadísticas cuando cambian los intentos
+  /**
+   * Calcula estadísticas globales, agrupadas por k y agrupadas por algoritmo.
+   * Se ejecuta cada vez que cambia "attempts".
+   */
   useEffect(() => {
     if (!attempts || attempts.length === 0) {
       setStats(null);
@@ -16,22 +26,24 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
 
     // Estadísticas generales
     const totalAttempts = attempts.length;
-    const avgExecutionTime = attempts.reduce((sum, att) => {
-      return sum + (att.executionTime || 0);
-    }, 0) / totalAttempts;
+    const avgExecutionTime =
+      attempts.reduce((sum, att) => sum + (att.executionTime || 0), 0) /
+      totalAttempts;
 
-    // Contar éxitos por k (número de colores)
+    // Contadores agrupados por k
     const successByK = {};
     const totalIterationsByK = {};
     const conflictsByK = {};
 
     attempts.forEach((att) => {
       const k = att.k || 3;
+
       if (!successByK[k]) {
         successByK[k] = { total: 0, successful: 0 };
         totalIterationsByK[k] = [];
         conflictsByK[k] = [];
       }
+
       successByK[k].total += 1;
       if (att.isSuccessful !== false) {
         successByK[k].successful += 1;
@@ -44,7 +56,7 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
       }
     });
 
-    // Calcular porcentajes y promedios
+    // Métricas finales agrupadas por k
     const successRates = {};
     const avgIterationsByK = {};
     const avgConflictsByK = {};
@@ -68,10 +80,11 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
       }
     });
 
-    // Datos por algoritmo (si se ejecutan múltiples)
+    // Agrupación por algoritmo
     const dataByAlgorithm = {};
     attempts.forEach((att) => {
       const algo = att.algorithm || "Las Vegas";
+
       if (!dataByAlgorithm[algo]) {
         dataByAlgorithm[algo] = {
           total: 0,
@@ -81,6 +94,7 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
           recolorizations: [],
         };
       }
+
       dataByAlgorithm[algo].total += 1;
       if (att.isSuccessful !== false) {
         dataByAlgorithm[algo].successful += 1;
@@ -132,6 +146,11 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
     });
   }, [attempts]);
 
+  /**
+   * Selecciona el intento marcado en la UI.
+   *
+   * @type {Object|null}
+   */
   const selectedAttempt = useMemo(() => {
     if (selectedAttemptIndex !== null && attempts[selectedAttemptIndex]) {
       return attempts[selectedAttemptIndex];
@@ -151,6 +170,7 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
 
   return (
     <div className="algorithm-stats-panel">
+
       {/* Sección 1: Estadísticas Generales */}
       <section className="stats-section general-stats">
         <h3>Estadísticas Generales</h3>
@@ -202,7 +222,7 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
         </div>
       </section>
 
-      {/* Sección 4: Comparativa por k (número de colores) */}
+      {/* Sección 4: Comparativa por k */}
       {Object.keys(stats.successRates).length > 1 && (
         <section className="stats-section k-comparison">
           <h3>Comparativa por Cantidad de Colores</h3>
@@ -219,17 +239,13 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
                   {stats.avgIterationsByK[k] && (
                     <div className="k-metric">
                       <span className="metric-name">Iteraciones:</span>
-                      <span className="metric-value">
-                        {stats.avgIterationsByK[k]}
-                      </span>
+                      <span className="metric-value">{stats.avgIterationsByK[k]}</span>
                     </div>
                   )}
                   {stats.avgConflictsByK[k] && (
                     <div className="k-metric">
                       <span className="metric-name">Conflictos:</span>
-                      <span className="metric-value">
-                        {stats.avgConflictsByK[k]}
-                      </span>
+                      <span className="metric-value">{stats.avgConflictsByK[k]}</span>
                     </div>
                   )}
                 </div>
@@ -238,7 +254,7 @@ export default function AlgorithmStatsPanel({ attempts = [], selectedAttemptInde
         </section>
       )}
 
-      {/* Sección 5: Detalles del Intento Seleccionado */}
+      {/* Sección 5: Intento seleccionado */}
       {selectedAttempt && (
         <section className="stats-section attempt-details">
           <h3>Detalles del Intento #{selectedAttempt.id}</h3>
