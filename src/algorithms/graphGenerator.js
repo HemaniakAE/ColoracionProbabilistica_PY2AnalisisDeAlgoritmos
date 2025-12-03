@@ -153,3 +153,93 @@ export function convertGraphToColoringFormat(nodes, edges) {
     data.neighbors,
   ]);
 }
+
+/**
+ * Genera un grafo con nodos en una cuadrícula ordenada
+ * Esto facilita la visualización y verificación de adyacencias
+ * @param {number} nodeCount - Cantidad de nodos a generar
+ * @param {number} canvasWidth - Ancho del canvas
+ * @param {number} canvasHeight - Alto del canvas
+ * @param {number} edgeProbability - Probabilidad de que exista una arista entre dos nodos
+ * @returns {Object} - {nodes, edges}
+ */
+export function generateUniformGridGraph(
+  nodeCount,
+  canvasWidth = 2500,
+  canvasHeight = 2000
+) {
+  const nodes = [];
+  const edges = [];
+
+  // Calcular dimensiones de la malla
+  const cols = Math.ceil(Math.sqrt(nodeCount));
+  const rows = Math.ceil(nodeCount / cols);
+
+  // Espaciado visual
+  const padding = 100;
+  const cellWidth = (canvasWidth - 2 * padding) / cols;
+  const cellHeight = (canvasHeight - 2 * padding) / rows;
+
+  // Crear nodos en grid
+  let idCounter = 1;
+  const grid = [];
+
+  for (let r = 0; r < rows; r++) {
+    grid[r] = [];
+    for (let c = 0; c < cols; c++) {
+      if (idCounter > nodeCount) break;
+
+      const x = padding + c * cellWidth + cellWidth / 2;
+      const y = padding + r * cellHeight + cellHeight / 2;
+
+      const node = {
+        id: String(idCounter),
+        type: "circle",
+        position: { x, y },
+        data: { label: idCounter },
+      };
+
+      nodes.push(node);
+      grid[r][c] = node.id;
+      idCounter++;
+    }
+  }
+
+  // Crear aristas solo a vecinos cercanos (rectos, ordenados)
+  let edgeId = 0;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const current = grid[r][c];
+      if (!current) continue;
+
+      // Conectar a la derecha
+      if (c + 1 < cols && grid[r][c + 1]) {
+        edges.push({
+          id: `e-${edgeId++}`,
+          source: current,
+          target: grid[r][c + 1],
+          type: "default",
+          className: "white-edge",
+          style: { stroke: "#ffffff", strokeWidth: 2 },
+          animated: false,
+        });
+      }
+
+      // Conectar abajo
+      if (r + 1 < rows && grid[r + 1][c]) {
+        edges.push({
+          id: `e-${edgeId++}`,
+          source: current,
+          target: grid[r + 1][c],
+          type: "default",
+          className: "white-edge",
+          style: { stroke: "#ffffff", strokeWidth: 2 },
+          animated: false,
+        });
+      }
+    }
+  }
+
+  return { nodes, edges };
+}

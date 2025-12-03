@@ -1,7 +1,7 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import "./GraphPlayToolbar.css";
 import { FaPlay } from "react-icons/fa";
-import { generateRandomGraph } from "../algorithms/graphGenerator";
+import { generateUniformGridGraph } from "../algorithms/graphGenerator";
 import { ColoringAlgorithmManager } from "../algorithms";
 
 const manager = new ColoringAlgorithmManager();
@@ -106,9 +106,9 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
   // Si no hay grafo, generar uno
   if (!nodes || nodes.length === 0) {
     const nodeCount = Math.floor(Math.random() * (150 - 100 + 1)) + 100;
-    const randomGraph = generateRandomGraph(nodeCount);
-    nodes = randomGraph.nodes;
-    edges = randomGraph.edges;
+    const gridGraph = generateUniformGridGraph(nodeCount);
+    nodes = gridGraph.nodes;
+    edges = gridGraph.edges;
   }
 
   // Construir adyacencia UNA vez
