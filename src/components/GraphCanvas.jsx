@@ -21,20 +21,6 @@ import { getConflictingEdges } from "../algorithms/coloringUtils";
 const nodeTypes = { circle: CircleNode };
 
 /**
- * 🎨 Colores para clic manual en nodos
- */
-const MANUAL_COLORS = [
-  "#3498db", // azul
-  "#2ecc71", // verde
-  "#f1c40f", // amarillo
-  "#9b59b6", // morado
-  "#e67e22", // naranja
-  "#1abc9c", // cian
-  "#ff6bcb", // rosa
-  "#bdc3c7", // gris
-];
-
-/**
  * VALIDACIÓN AUTOMÁTICA DE CONEXIONES
  * - Nodo "1": máximo 2 conexiones
  * - Todos los demás nodos: máximo 3 conexiones
@@ -53,6 +39,7 @@ function enforceConnectionLimits(edges) {
     const maxA = a === "1" ? 2 : 3;
     const maxB = b === "1" ? 2 : 3;
 
+    // Solo permitimos la arista si ambos nodos aún están debajo de su límite
     if (da < maxA && db < maxB) {
       filtered.push(e);
       degree.set(a, da + 1);
@@ -69,31 +56,26 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
   const wrapperRef = useRef(null);
   const reactFlowInstance = useRef(null);
 
-  // Exponer métodos para controlar el grafo desde el exterior (versión original)
-  useImperativeHandle(
-    ref,
-    () => ({
-      setGraph: (newNodes, newEdges) => {
-        const normalizedNodes = (newNodes || []).map((n, idx) => ({
-          id: String(n.id ?? `node_${idx}`),
-          type: n.type ?? "circle",
-          position: n.position ?? { x: 0, y: 0 },
-          data: n.data ?? { label: idx + 1 },
-        }));
+  // Exponer métodos para controlar el grafo desde el exterior
+  useImperativeHandle(ref, () => ({
+    setGraph: (newNodes, newEdges) => {
+      // Normalizar nodos/edges y asegurarse de que tengan los campos necesarios
+      const normalizedNodes = (newNodes || []).map((n, idx) => ({
+        id: String(n.id ?? `node_${idx}`),
+        type: n.type ?? "circle",
+        position: n.position ?? { x: 0, y: 0 },
+        data: n.data ?? { label: idx + 1 },
+      }));
 
-        const normalizedEdgesRaw = (newEdges || []).map((e, idx) => ({
-          id: e && e.id ? String(e.id) : `edge_${idx}`,
-          source: e && e.source ? String(e.source) : undefined,
-          target: e && e.target ? String(e.target) : undefined,
-          type: e && e.type ? e.type : "default",
-          className: e && e.className ? e.className : "white-edge",
-          style:
-            e && e.style
-              ? e.style
-              : { stroke: "#ffffff", strokeWidth: 2 },
-          animated:
-            e && typeof e.animated === "boolean" ? e.animated : false,
-        }));
+      const normalizedEdgesRaw = (newEdges || []).map((e, idx) => ({
+        id: e && e.id ? String(e.id) : `edge_${idx}`,
+        source: e && e.source ? String(e.source) : undefined,
+        target: e && e.target ? String(e.target) : undefined,
+        type: e && e.type ? e.type : 'default',
+        className: e && e.className ? e.className : 'white-edge',
+        style: e && e.style ? e.style : { stroke: '#ffffff', strokeWidth: 2 },
+        animated: e && typeof e.animated === 'boolean' ? e.animated : false,
+      }));
 
       // Filtrar aristas inválidas (sin source/target o que refieren nodos inexistentes)
       const nodeIdSet = new Set(normalizedNodes.map((n) => n.id));
@@ -102,6 +84,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         if (!nodeIdSet.has(e.source) || !nodeIdSet.has(e.target)) return false;
         return true;
       });
+
 
       // Si se han descartado aristas, loguearlo para depuración
       if (normalizedEdgesRaw.length !== normalizedEdges.length) {
@@ -127,60 +110,52 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
       setNodes(normalizedNodes);
       setEdges(normalizedEdges);
 
-        setTimeout(() => {
-          try {
-            if (reactFlowInstance.current) {
-              if (
-                typeof reactFlowInstance.current.setNodes === "function"
-              ) {
-                reactFlowInstance.current.setNodes(normalizedNodes);
-              }
-              if (
-                typeof reactFlowInstance.current.setEdges === "function"
-              ) {
-                reactFlowInstance.current.setEdges(normalizedEdges);
-              }
+      // Si la instancia ya existe, forzar que la instancia actualice su estado interno
+      setTimeout(() => {
+        try {
+          if (reactFlowInstance.current) {
+            if (typeof reactFlowInstance.current.setNodes === 'function') {
+              reactFlowInstance.current.setNodes(normalizedNodes);
             }
-          } catch (err) {
-            console.warn(
-              "Error aplicando nodes/edges a reactFlowInstance",
-              err
-            );
+            if (typeof reactFlowInstance.current.setEdges === 'function') {
+              reactFlowInstance.current.setEdges(normalizedEdges);
+            }
           }
-        }, 100);
+        } catch (err) {
+          // no bloquear
+          // eslint-disable-next-line no-console
+          console.warn('Error aplicando nodes/edges a reactFlowInstance', err);
+        }
+      }, 100);
 
-        setTimeout(() => {
-          try {
-            if (
-              reactFlowInstance.current &&
-              typeof reactFlowInstance.current.fitView === "function"
-            ) {
-              reactFlowInstance.current.fitView({ padding: 0.1 });
-            }
-          } catch (err) {}
-        }, 50);
-      },
-      resetGraph: () => {
-        setNodes([]);
-        setEdges([]);
-      },
-      getGraph: () => ({
-        nodes: reactFlowInstance.current
-          ? reactFlowInstance.current.getNodes()
-          : [],
-        edges: reactFlowInstance.current
-          ? reactFlowInstance.current.getEdges()
-          : [],
-      }),
-    }),
-    [setNodes, setEdges]
-  );
+      // Forzar ajuste de vista para que las aristas y nodos sean visibles
+      setTimeout(() => {
+        try {
+          if (reactFlowInstance.current && typeof reactFlowInstance.current.fitView === 'function') {
+            reactFlowInstance.current.fitView({ padding: 0.1 });
+          }
+        } catch (err) {
+          // no bloquear en caso de error
+        }
+      }, 50);
+    },
+    resetGraph: () => {
+      setNodes([]);
+      setEdges([]);
+    },
+    getGraph: () => ({ nodes: reactFlowInstance.current ? reactFlowInstance.current.getNodes() : [], edges: reactFlowInstance.current ? reactFlowInstance.current.getEdges() : [] }),
+  }), [setNodes, setEdges]);
 
-  // API imperativa para AutomaticExecute / PlayToolbar
+  // ===== API imperativa para AutomaticExecute / PlayToolbar =====
   useImperativeHandle(
     ref,
     () => ({
+      /**
+       * Recibe nodos y aristas desde el algoritmo / toolbar y
+       * los normaliza + aplica límites de conexiones.
+       */
       setGraph: (newNodes = [], newEdges = []) => {
+        // 1) Normalizar nodos
         const normalizedNodes = newNodes.map((n, idx) => {
           const id = String(n.id ?? idx + 1);
           return {
@@ -197,6 +172,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
 
         const idSet = new Set(normalizedNodes.map((n) => n.id));
 
+        // 2) Normalizar aristas crudas (y eliminar las que apunten a nodos inexistentes)
         const rawEdges = (newEdges || [])
           .map((e, idx) => {
             const source = String(e.source);
@@ -216,6 +192,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
           })
           .filter(Boolean);
 
+        // 3) Aplicar límites automáticos a las conexiones
         const limitedEdges = enforceConnectionLimits(rawEdges);
 
         // 4) Aplicar estilos de conflicto
@@ -236,6 +213,10 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
 
       getGraph: () => ({ nodes, edges }),
 
+      /**
+       * Recalcula los estilos de conflicto de las aristas basado en los colores actuales
+       * Útil cuando los colores de los nodos cambian dinámicamente
+       */
       updateConflictStyles: () => {
         setEdges((currentEdges) => applyConflictStyles(currentEdges, nodes));
       },
@@ -243,6 +224,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
     [nodes, edges, setNodes, setEdges]
   );
 
+  // ===== Conexiones MANUALES: también pasan por enforceConnectionLimits =====
   const onConnect = useCallback(
     (params) => {
       if (disableOnConnect) return;
@@ -256,42 +238,14 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
           eds
         );
 
+        // Aplicar el mismo límite cuando conectas a mano
         return enforceConnectionLimits(withNew);
       });
     },
-    [disableOnConnect, setEdges]
+    [disableOnConnect]
   );
 
-  // 🎨 Cambio de color al hacer click en un nodo
-  const onNodeClick = useCallback(
-    (_, node) => {
-      setNodes((prev) => {
-        const updated = prev.map((n) => {
-          if (n.id !== node.id) return n;
-
-          const currentIndex =
-            typeof n.data?.colorIndex === "number" ? n.data.colorIndex : 0;
-          const nextIndex = (currentIndex + 1) % MANUAL_COLORS.length;
-          const nextColor = MANUAL_COLORS[nextIndex];
-
-          return {
-            ...n,
-            data: {
-              ...(n.data || {}),
-              colorIndex: nextIndex,
-              displayColor: nextColor,
-            },
-          };
-        });
-
-        // actualizar estilos de conflicto
-        setEdges((currentEdges) => applyConflictStyles(currentEdges, updated));
-        return updated;
-      });
-    },
-    [setNodes, setEdges]
-  );
-
+  // ===== Drag & drop desde la toolbar manual =====
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -317,7 +271,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         id,
         type: "circle",
         position,
-        data: {},
+        data: {}, // sin número / texto
       };
 
       setNodes((prev) => [...prev, newNode]);
@@ -334,15 +288,14 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onNodeClick={onNodeClick}
         onInit={(instance) => {
           reactFlowInstance.current = instance;
         }}
         onDrop={onDrop}
         onDragOver={onDragOver}
         fitView
-        minZoom={0.05}
-        maxZoom={2}
+        minZoom={0.05}  
+        maxZoom={2} 
       >
         <Background />
         <MiniMap />
