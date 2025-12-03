@@ -55,7 +55,7 @@ export default function GraphToolbar({ onDeleteNodes, removeMode = false, onRota
       >
         <MdLoop className='rotate-icon' />
         <span className='rotate-text'>
-          {selectedNodeId ? `Rotar (Nodo ${selectedNodeId})` : "Seleccionar nodo"}
+          {selectedNodeId ? `Rotar (${selectedNodeId})` : "Seleccionar"}
         </span>
       </button>
 
