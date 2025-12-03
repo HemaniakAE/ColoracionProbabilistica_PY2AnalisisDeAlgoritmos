@@ -118,3 +118,53 @@
   color: white; 
   font-weight: 500;
 }
+
+.graph-toolbar .rotate-colors-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: rgba(40, 40, 40, 0.9);
+  border: none;
+  color: white;
+  padding: 10px;
+  gap: 4vh;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.graph-toolbar .rotate-colors-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+  background: rgba(52, 152, 219, 0.2);
+}
+
+.graph-toolbar .rotate-colors-button:active:not(:disabled) {
+  background: rgba(52, 152, 219, 0.3);
+}
+
+.graph-toolbar .rotate-colors-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rotate-icon {
+  font-size: 1.5rem;
+  margin-left: 1vh;
+  transition: transform 0.3s ease;
+}
+
+.graph-toolbar .rotate-colors-button:hover:not(:disabled) .rotate-icon {
+  animation: rotate-animation 0.6s ease-in-out;
+}
+
+@keyframes rotate-animation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rotate-text {
+  color: white;
+  font-weight: 500;
+}

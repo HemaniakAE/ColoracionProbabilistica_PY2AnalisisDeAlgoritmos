@@ -140,7 +140,8 @@ export default forwardRef(function GraphPlayToolbar({
   graphCanvasRef, 
   onAttemptsUpdate, 
   onSelectedAttemptChange, 
-  onReset 
+  onReset,
+  onSelectedColorsChange
 }, ref) {
   const [colorCount, setColorCount] = useState(3);
   const [selectedColors, setSelectedColors] = useState([
@@ -166,13 +167,20 @@ export default forwardRef(function GraphPlayToolbar({
 
   useImperativeHandle(ref, () => ({
     clearAttempts,
-  }), []);
+    getSelectedColors: () => selectedColors,
+  }), [selectedColors]);
 
   useEffect(() => {
     if (selectedColors.length > colorCount) {
       setSelectedColors((prev) => prev.slice(0, colorCount));
     }
   }, [colorCount, selectedColors.length]);
+
+  useEffect(() => {
+    if (onSelectedColorsChange && typeof onSelectedColorsChange === 'function') {
+      onSelectedColorsChange(selectedColors);
+    }
+  }, [selectedColors, onSelectedColorsChange]);
 
   useEffect(() => {
     if (limitHit) {

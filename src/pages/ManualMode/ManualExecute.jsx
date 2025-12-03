@@ -7,6 +7,7 @@ import GraphPlayToolbar from "../../components/GraphPlayToolbar";
 
 function ManualExecute() {
   const [removeMode, setRemoveMode] = useState(false);
+  const [selectedColors, setSelectedColors] = useState(["blue", "green", "yellow"]);
   const graphCanvasRef = useRef(null);
   const graphPlayToolbarRef = useRef(null);
 
@@ -48,6 +49,18 @@ function ManualExecute() {
     console.log("Intento seleccionado:", index);
   };
 
+  const handleRotateAllColors = () => {
+    if (graphCanvasRef.current && graphCanvasRef.current.rotateColors) {
+      graphCanvasRef.current.rotateColors(selectedColors);
+      console.log("✅ Colores rotados en todos los nodos");
+    }
+  };
+
+  const handleSelectedColorsChange = (colors) => {
+    setSelectedColors(colors);
+    console.log("Colores seleccionados actualizados:", colors);
+  };
+
   return (
     <>
       <Header onReset={handleResetGraph} />
@@ -58,12 +71,15 @@ function ManualExecute() {
             ref={graphCanvasRef}
             removeMode={removeMode}
             disableOnConnect={removeMode}
+            selectedColors={selectedColors}
           />
         </div>
         <div className="top-right">
           <GraphToolbar 
             onDeleteNodes={toggleRemoveMode}
             removeMode={removeMode}
+            onRotateColors={handleRotateAllColors}
+            selectedColors={selectedColors}
           />
           <GraphPlayToolbar 
             ref={graphPlayToolbarRef}
@@ -71,6 +87,7 @@ function ManualExecute() {
             onAttemptsUpdate={handleAttemptsUpdate}
             onSelectedAttemptChange={handleSelectedAttemptChange}
             onReset={handleResetAttempts}
+            onSelectedColorsChange={handleSelectedColorsChange}
           />
         </div>
       </div>

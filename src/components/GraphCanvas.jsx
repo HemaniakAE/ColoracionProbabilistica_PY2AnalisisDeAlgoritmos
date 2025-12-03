@@ -3,6 +3,8 @@ import {
   useRef,
   useImperativeHandle,
   forwardRef,
+  useState,
+  useEffect,
 } from "react";
 import ReactFlow, {
   Background,
@@ -18,6 +20,17 @@ import "./GraphCanvas.css";
 import CircleNode from "./CircleNode";
 
 const nodeTypes = { circle: CircleNode };
+
+const COLOR_MAP = {
+  blue: "#3498db",
+  green: "#2ecc71",
+  yellow: "#f1c40f",
+  purple: "#9b59b6",
+  orange: "#e67e22",
+  cyan: "#1abc9c",
+  pink: "#ff6bcb",
+  gray: "#bdc3c7",
+};
 
 function enforceConnectionLimits(edges) {
   const degree = new Map();
@@ -43,11 +56,41 @@ function enforceConnectionLimits(edges) {
   return filtered;
 }
 
-const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false }, ref) => {
+// Detecta conflictos en las aristas
+function detectConflictEdges(nodes, edges) {
+  const colorMap = new Map();
+  
+  // Crear mapa de colores
+  nodes.forEach(node => {
+    colorMap.set(String(node.id), node.data?.displayColor);
+  });
+
+  // Encontrar aristas en conflicto
+  const conflictEdges = new Set();
+  edges.forEach(edge => {
+    const sourceColor = colorMap.get(String(edge.source));
+    const targetColor = colorMap.get(String(edge.target));
+    
+    if (sourceColor === targetColor && sourceColor) {
+      conflictEdges.add(edge.id);
+    }
+  });
+
+  return conflictEdges;
+}
+
+const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false, selectedColors = [] }, ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [conflictEdges, setConflictEdges] = useState(new Set());
   const wrapperRef = useRef(null);
   const reactFlowInstance = useRef(null);
+
+  // Detectar conflictos cuando cambien los nodos o aristas
+  useEffect(() => {
+    const conflicts = detectConflictEdges(nodes, edges);
+    setConflictEdges(conflicts);
+  }, [nodes, edges]);
 
   useImperativeHandle(ref, () => ({
     setGraph: (newNodes = [], newEdges = []) => {
@@ -109,6 +152,62 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false }
         edge.source !== nodeId && edge.target !== nodeId
       ));
     },
+
+    rotateColors: (colors) => {
+      if (!colors || colors.length === 0) {
+        console.warn("No hay colores seleccionados para rotar");
+        return;
+      }
+
+      setNodes(prevNodes => 
+        prevNodes.map(node => {
+          const currentColor = node.data?.displayColor;
+          const currentIndex = colors.findIndex(c => COLOR_MAP[c] === currentColor);
+          const nextIndex = (currentIndex + 1) % colors.length;
+          const nextColorKey = colors[nextIndex];
+          const nextColor = COLOR_MAP[nextColorKey];
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              displayColor: nextColor,
+              colorKey: nextColorKey,
+            }
+          };
+        })
+      );
+    },
+
+    rotateNodeColor: (nodeId, colors) => {
+      if (!colors || colors.length === 0) {
+        console.warn("No hay colores seleccionados para rotar");
+        return;
+      }
+
+      setNodes(prevNodes =>
+        prevNodes.map(node => {
+          if (String(node.id) !== String(nodeId)) {
+            return node;
+          }
+
+          const currentColor = node.data?.displayColor;
+          const currentIndex = colors.findIndex(c => COLOR_MAP[c] === currentColor);
+          const nextIndex = (currentIndex + 1) % colors.length;
+          const nextColorKey = colors[nextIndex];
+          const nextColor = COLOR_MAP[nextColorKey];
+
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              displayColor: nextColor,
+              colorKey: nextColorKey,
+            }
+          };
+        })
+      );
+    },
   }), [nodes, edges, setNodes, setEdges]);
 
   const onConnect = useCallback(
@@ -167,22 +266,42 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false }
 
       const newNodeId = `manual_node_${Date.now()}_${nodes.length}`;
       
+      // Usar colores seleccionados o defaults
+      const defaultColors = selectedColors.length > 0 ? selectedColors : ["blue", "green", "yellow"];
+      const colorKey = defaultColors[nodes.length % defaultColors.length];
+      const displayColor = COLOR_MAP[colorKey];
+      
       const newNode = {
         id: newNodeId,
         type: "circle",
         position,
         data: { 
           label: `N${nodes.length + 1}`,
-          colorIndex: nodes.length % 3,
-          displayColor: nodes.length % 3 === 0 ? "#3498db" : 
-                       nodes.length % 3 === 1 ? "#2ecc71" : "#f1c40f"
+          colorIndex: nodes.length % defaultColors.length,
+          displayColor: displayColor,
+          colorKey: colorKey,
         },
       };
 
       setNodes((prev) => [...prev, newNode]);
     },
-    [nodes, setNodes]
+    [nodes, setNodes, selectedColors]
   );
+
+  // Aplicar estilos a aristas en conflicto
+  const styledEdges = edges.map(edge => {
+    const isConflict = conflictEdges.has(edge.id);
+    return {
+      ...edge,
+      style: isConflict 
+        ? { 
+            stroke: "#e74c3c", 
+            strokeWidth: 3,
+            animation: "edge-pulse 0.6s infinite"
+          }
+        : { stroke: "#ffffff", strokeWidth: 1.5 }
+    };
+  });
 
   return (
     <div className="graph-canvas" ref={wrapperRef}>
@@ -209,7 +328,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false, removeMode = false }
       
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={styledEdges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -238,6 +357,12 @@ style.textContent = `
     0% { opacity: 1; }
     50% { opacity: 0.7; }
     100% { opacity: 1; }
+  }
+  
+  @keyframes edge-pulse {
+    0% { opacity: 1; stroke-width: 3; }
+    50% { opacity: 0.6; stroke-width: 4; }
+    100% { opacity: 1; stroke-width: 3; }
   }
 `;
 document.head.appendChild(style);
