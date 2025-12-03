@@ -55,6 +55,14 @@
   opacity: 0.95 !important;
 }
 
+/* Estilos para aristas en conflicto (rojo grueso) */
+.conflict-edge .react-flow__edge-path {
+  stroke: #ff0000 !important;
+  stroke-width: 4px !important;
+  stroke-linecap: round !important;
+  opacity: 1 !important;
+}
+
 /* Reglas de respaldo para asegurar visibilidad de aristas generadas */
 .react-flow__edge-path {
   stroke: #ffffff !important;

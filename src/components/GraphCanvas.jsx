@@ -16,6 +16,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import "./GraphCanvas.css";
 import CircleNode from "./CircleNode";
+import { getConflictingEdges } from "../algorithms/coloringUtils";
 
 const nodeTypes = { circle: CircleNode };
 
@@ -47,6 +48,44 @@ function enforceConnectionLimits(edges) {
   });
 
   return filtered;
+}
+
+/**
+ * Aplica estilos de conflicto a aristas basado en los colores actuales de los nodos
+ */
+function applyConflictStyles(edges, nodes) {
+  // Construir estructura de grafo coloreado para usar getConflictingEdges
+  const coloredGraph = nodes.map((node) => {
+    const color = node.data?.displayColor || node.data?.color;
+    const colorIndex = typeof color === "string" ? color : node.data?.colorIndex || 0;
+    
+    // Encontrar vecinos basado en las aristas
+    const neighbors = edges
+      .filter(e => e.source === node.id || e.target === node.id)
+      .map(e => e.source === node.id ? e.target : e.source);
+    
+    return [node.id, colorIndex, neighbors];
+  });
+
+  // Obtener aristas en conflicto usando la función utilitaria
+  const conflictingEdgeIds = getConflictingEdges(coloredGraph);
+
+  // Aplicar estilos basado en conflictos identificados
+  return edges.map((edge) => {
+    const edgeKey = [edge.source, edge.target].sort().join('-');
+    const isConflict = conflictingEdgeIds.has(edgeKey);
+
+    if (isConflict) {
+      return {
+        ...edge,
+        className: 'conflict-edge',
+      };
+    }
+    return {
+      ...edge,
+      className: 'white-edge',
+    };
+  });
 }
 
 const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
@@ -105,8 +144,11 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         firstEdge: normalizedEdges[0],
       }, null, 2));
 
+      // Aplicar estilos de conflicto
+      const styledEdges = applyConflictStyles(normalizedEdges, normalizedNodes);
+
       setNodes(normalizedNodes);
-      setEdges(normalizedEdges);
+      setEdges(styledEdges);
 
       // Si la instancia ya existe, forzar que la instancia actualice su estado interno
       setTimeout(() => {
@@ -193,8 +235,11 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         // 3) Aplicar límites automáticos a las conexiones
         const limitedEdges = enforceConnectionLimits(rawEdges);
 
+        // 4) Aplicar estilos de conflicto
+        const styledEdges = applyConflictStyles(limitedEdges, normalizedNodes);
+
         setNodes(normalizedNodes);
-        setEdges(limitedEdges);
+        setEdges(styledEdges);
 
         if (reactFlowInstance.current) {
           reactFlowInstance.current.fitView({ padding: 0.2 });

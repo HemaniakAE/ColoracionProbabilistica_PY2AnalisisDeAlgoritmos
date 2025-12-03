@@ -35,6 +35,7 @@ export function lasVegasColoring(graph, k, maxIterations = 1000, findValidSoluti
         }
         
         const endTime = performance.now();
+        // Si no encontramos solución válida, retornamos la mejor encontrada (fallback)
         return {
             coloring: bestColoring || generateRandomColoring(graph, k),
             stats: {
@@ -42,7 +43,7 @@ export function lasVegasColoring(graph, k, maxIterations = 1000, findValidSoluti
                 iterations: iterations,
                 execution_time: endTime - startTime,
                 conflicts: bestConflicts,
-                message: `No se encontró solución válida en ${iterations} iteraciones`,
+                message: `No se encontró solución válida en ${iterations} iteraciones. Se retorna la mejor encontrada (${bestConflicts} conflictos)`,
                 mode: 'find-valid-solution'
             }
         };
