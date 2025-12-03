@@ -8,6 +8,7 @@ import AlgorithmStatsPanel from "../../components/AlgorithmStatsPanel";
 
 function AutomaticMode() {
   const [removeMode, setRemoveMode] = useState(false);
+  const [selectedColors, setSelectedColors] = useState(["blue", "green", "yellow"]);
   const graphCanvasRef = useRef(null);
   const graphPlayToolbarRef = useRef(null);
   const [attempts, setAttempts] = useState([]);
@@ -15,6 +16,18 @@ function AutomaticMode() {
 
   const enableRemoveMode = () => {
     setRemoveMode(true);
+  };
+
+  const handleRotateAllColors = () => {
+    if (graphCanvasRef.current && graphCanvasRef.current.rotateColors) {
+      graphCanvasRef.current.rotateColors(selectedColors);
+      console.log("✅ Colores rotados en todos los nodos");
+    }
+  };
+
+  const handleSelectedColorsChange = (colors) => {
+    setSelectedColors(colors);
+    console.log("Colores seleccionados actualizados:", colors);
   };
 
   // Función para resetear todo
@@ -59,6 +72,7 @@ function AutomaticMode() {
             removeMode={removeMode}
             setRemoveMode={setRemoveMode}
             disableOnConnect={true}
+            selectedColors={selectedColors}
           />
           {/* Panel de estadísticas debajo del canvas */}
           <AlgorithmStatsPanel 
@@ -67,12 +81,18 @@ function AutomaticMode() {
           />
         </div>
         <div className="top-right">
-          {/*<GraphToolbar onDeleteNodes={enableRemoveMode} />*/}
+          <GraphToolbar 
+            onDeleteNodes={enableRemoveMode}
+            removeMode={removeMode}
+            onRotateColors={handleRotateAllColors}
+            selectedColors={selectedColors}
+          />
           <GraphPlayToolbar 
             ref={graphPlayToolbarRef}
             graphCanvasRef={graphCanvasRef}
             onAttemptsUpdate={setAttempts}
             onSelectedAttemptChange={setSelectedAttemptIndex}
+            onSelectedColorsChange={handleSelectedColorsChange}
           />
         </div>
       </div>

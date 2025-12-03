@@ -10,10 +10,10 @@
   padding: 1rem;
   border-radius: 12px;
   width: 28vh;
-  height: 20vh;
-  margin-top: 5vh;
-  margin-bottom: 2vh;
-  margin-right: 8vh;
+  height: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right: 0;
 }
 
 /* Título arcoíris */
