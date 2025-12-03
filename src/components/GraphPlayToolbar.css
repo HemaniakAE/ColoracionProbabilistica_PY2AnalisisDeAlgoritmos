@@ -1,389 +1,112 @@
-.graph-play-toolbar {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.85),
-    rgba(26, 26, 29, 0.85)
-  );
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(63, 60, 60, 0.4);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  padding: 1rem;
-  border-radius: 12px;
-  width: 28vh;
-  height: auto;
-  margin-right: 8vh;
-}
+/* Agrega al final de tu GraphPlayToolbar.css */
 
-/* Título arcoíris */
-.graph-play-toolbar h3 {
-  background: linear-gradient(
-    90deg,
-    red,
-    orange,
-    yellow,
-    green,
-    cyan,
-    blue,
-    violet
-  );
-  margin-top: 0.2px;
-  background-size: 400% 400%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: rainbow 6s ease infinite;
-  margin-bottom: 10px;
-  font-size: 4vh;
-}
-
-/* Botón PLAY */
-.graph-play-toolbar .play-button {
+.algorithm-config {
+  margin: 15px 0;
+  padding: 12px;
+  background: rgba(40, 40, 45, 0.7);
+  border-radius: 10px;
   display: flex;
-  align-items: center;
-  width: 100%;
-  background: rgba(40, 40, 40, 0.9);
-  border: none;
-  color: white;
-  padding: 10px;
-  gap: 4vh;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.graph-play-toolbar .play-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-}
-
-.graph-play-toolbar .play-button:active {
-  background: rgba(54, 54, 54, 0.9);
-}
-
-.play-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.play-icon {
-  font-size: 1.5rem;
-  margin-left: 1vh;
-}
-
-.play-text {
-  color: white;
+.algorithm-config label {
+  color: #e0e0e8;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
-/* Configuración de colores */
-.color-config {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
+.algorithm-mode, .probability-config, .iterations-config {
+  margin-top: 8px;
 }
 
-.color-config label,
-.color-select label {
-  color: white;
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-}
-
-/* Input numérico */
-.color-config input {
-  background: rgba(40, 40, 40, 0.9);
-  border: 1px solid rgba(90, 90, 90, 0.6);
-  border-radius: 6px;
-  padding: 6px;
-  color: white;
-}
-
-/* Contenedor de opciones (sustituye al select) */
-.color-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 6px;
-}
-
-/* Animación de límite alcanzado */
-.color-grid.limit-hit {
-  animation: shake 0.5s;
-  border-radius: 8px;
-}
-@keyframes shake {
-  10% {
-    transform: translateX(-4px);
-  }
-  30% {
-    transform: translateX(4px);
-  }
-  50% {
-    transform: translateX(-3px);
-  }
-  70% {
-    transform: translateX(3px);
-  }
-  90% {
-    transform: translateX(-1px);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
-/* Grid de opciones */
-.color-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Cada "option" estilada como botón */
-.color-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(40, 40, 40, 0.7);
-  color: white;
-  cursor: pointer;
-  min-width: 96px;
-  justify-content: space-between;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-  font-weight: 600;
-}
-
-/* Hover */
-.color-option:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-}
-
-/* Visual cuando está seleccionado */
-.color-option.selected {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-  transform: translateY(-3px);
-  outline: 2px solid rgba(255, 255, 255, 0.04);
-}
-
-/* Checkmark pequeño */
-.color-option .checkmark {
-  margin-left: 8px;
-  opacity: 0.95;
-  font-size: 0.95rem;
-}
-
-/* Emoji y nombre */
-.color-emoji {
-  font-size: 1.15rem;
-  margin-right: 6px;
-}
-.color-name {
-  font-size: 0.95rem;
-  opacity: 0.95;
-}
-
-/* Contador pequeño */
-.color-counter {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 6px;
-}
-
-/* Colores tenues por fondo: usa rgba para no ser agresivos */
-.color-option.blue {
-  background: linear-gradient(
-    180deg,
-    rgba(3, 169, 244, 0.12),
-    rgba(3, 169, 244, 0.06)
-  );
-  color: white;
-}
-.color-option.green {
-  background: linear-gradient(
-    180deg,
-    rgba(76, 175, 80, 0.12),
-    rgba(76, 175, 80, 0.06)
-  );
-  color: white;
-}
-.color-option.yellow {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 235, 59, 0.12),
-    rgba(255, 235, 59, 0.06)
-  );
-  color: rgba(255, 255, 255, 0.9);
-}
-.color-option.purple {
-  background: linear-gradient(
-    180deg,
-    rgba(156, 39, 176, 0.12),
-    rgba(156, 39, 176, 0.06)
-  );
-  color: white;
-}
-.color-option.orange {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 152, 0, 0.12),
-    rgba(255, 152, 0, 0.06)
-  );
-  color: rgba(255, 255, 255, 0.9);
-}
-.color-option.cyan {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 188, 212, 0.12),
-    rgba(0, 188, 212, 0.06)
-  );
-  color: white;
-}
-.color-option.pink {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 64, 129, 0.12),
-    rgba(255, 64, 129, 0.06)
-  );
-  color: white;
-}
-.color-option.gray {
-  background: linear-gradient(
-    180deg,
-    rgba(200, 200, 200, 0.08),
-    rgba(200, 200, 200, 0.03)
-  );
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.attempt-button {
-  background: transparent;
-  transition: transform 0.2s ease;
-}
-
-.attempt-button:hover {
-  transform: scale(1.04);
-}
-
-.select-algorithm {
-  background: rgba(40, 40, 40, 0.9);
+.select-mode {
   width: 100%;
-  height: 3vh;
-  border-radius: 5px;
-  border: 1px solid transparent;
-  font-size: 0.8rem;
-}
-
-/* Opciones select y controles */
-.option-select {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
-  gap: 4px;
-}
-
-.option-select label {
+  padding: 8px;
+  background: rgba(30, 30, 35, 0.9);
+  border: 1px solid rgba(90, 90, 100, 0.6);
+  border-radius: 6px;
   color: white;
   font-size: 0.9rem;
-  margin-bottom: 2px;
+  margin-top: 5px;
 }
 
-.select-valid-solution {
-  background: rgba(40, 40, 40, 0.9);
-  border: 1px solid rgba(90, 90, 90, 0.6);
-  border-radius: 6px;
-  padding: 6px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.select-valid-solution:hover {
-  border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(50, 50, 50, 0.9);
-}
-
-.select-valid-solution:focus {
-  outline: none;
-  border-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-}
-
-/* Slider de probabilidad */
 .probability-slider {
-  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.probability-slider input[type="range"] {
+  flex: 1;
   height: 6px;
+  background: rgba(60, 60, 70, 0.8);
   border-radius: 3px;
-  background: rgba(40, 40, 40, 0.9);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
-  cursor: pointer;
 }
 
-.probability-slider::-webkit-slider-thumb {
+.probability-slider input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
   width: 16px;
   height: 16px;
+  background: #667eea;
   border-radius: 50%;
-  background: #ffffff;
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
-  transition: all 0.2s ease;
-}
-
-.probability-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
-}
-
-.probability-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
-  transition: all 0.2s ease;
-}
-
-.probability-slider::-moz-range-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
-}
-
-.probability-slider::-moz-range-track {
-  background: none;
-  border: none;
 }
 
 .probability-value {
-  color: #ffffff;
-  font-size: 0.85rem;
+  color: white;
   font-weight: 600;
+  min-width: 30px;
   text-align: center;
-  margin-top: 2px;
 }
 
-/* Ajustes mobile */
-@media (max-width: 480px) {
-  .color-options {
-    gap: 6px;
-  }
-  .color-option {
-    min-width: 72px;
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-  .play-text {
-    font-size: 0.9rem;
-  }
+.iterations-input {
+  width: 100%;
+  padding: 8px;
+  background: rgba(30, 30, 35, 0.9);
+  border: 1px solid rgba(90, 90, 100, 0.6);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.attempt-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.attempt-id {
+  font-weight: bold;
+  color: #667eea;
+}
+
+.attempt-algo {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.attempt-time {
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.attempt-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-top: 3px;
+  opacity: 0.8;
+}
+
+.attempt-conflicts, .attempt-iterations {
+  padding: 1px 5px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
 }
