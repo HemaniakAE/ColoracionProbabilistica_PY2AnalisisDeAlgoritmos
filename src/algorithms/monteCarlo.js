@@ -16,7 +16,16 @@ export function monteCarloColoring(
     let currentConflicts = bestConflicts;
     
     for (let iterations = 1; iterations <= maxIterations; iterations++) {
-        const randomColoring = generateRandomColoring(graph, k);
+        let randomColoring;
+        
+        if (findValidSolution) {
+            // Búsqueda local: mutar coloración actual
+            randomColoring = localSearch(currentColoring, graph, k);
+        } else {
+            // Coloración completamente aleatoria
+            randomColoring = generateRandomColoring(graph, k);
+        }
+        
         const conflicts = countConflicts(randomColoring);
         
         if (findValidSolution && conflicts === 0) {
@@ -35,24 +44,23 @@ export function monteCarloColoring(
             };
         }
         
-        const randomValue = Math.random();
-        
-        const shouldAccept = (conflicts < currentConflicts) || 
-                            (randomValue < acceptanceProbability);
-        
-        if (shouldAccept) {
+        // Aceptar si es mejor que la actual
+        if (conflicts < currentConflicts) {
             currentColoring = randomColoring;
             currentConflicts = conflicts;
-            
-            if (conflicts < bestConflicts) {
-                bestColoring = randomColoring;
-                bestConflicts = conflicts;
+        } else if (conflicts > currentConflicts) {
+            // Aceptar solución peor solo con cierta probabilidad
+            const randomValue = Math.random();
+            if (randomValue < acceptanceProbability) {
+                currentColoring = randomColoring;
+                currentConflicts = conflicts;
             }
         }
         
-        if (conflicts === 0) {
-            bestColoring = randomColoring;
-            bestConflicts = 0;
+        // Actualizar mejor solución encontrada
+        if (currentConflicts < bestConflicts) {
+            bestColoring = currentColoring;
+            bestConflicts = currentConflicts;
         }
     }
     
@@ -81,4 +89,38 @@ export function monteCarloColoring(
             mode: findValidSolution ? 'find-valid-solution' : 'limited-iterations'
         }
     };
+}
+
+// Búsqueda local: mutar un nodo conflictivo
+function localSearch(coloring, graph, k) {
+    const newColoring = coloring.map(node => [...node]);
+    const colorMap = new Map(coloring.map(n => [n[0], n[1]]));
+    
+    // Encontrar nodo conflictivo
+    let conflictingNodes = [];
+    for (const [nodeId, color, neighbors] of newColoring) {
+        for (const neighborId of neighbors) {
+            const neighborColor = colorMap.get(neighborId);
+            if (neighborColor === color) {
+                conflictingNodes.push(nodeId);
+                break;
+            }
+        }
+    }
+    
+    // Si no hay conflictos, retornar igual
+    if (conflictingNodes.length === 0) {
+        return newColoring;
+    }
+    
+    // Mutar un nodo conflictivo aleatorio
+    const nodeToChange = conflictingNodes[Math.floor(Math.random() * conflictingNodes.length)];
+    const nodeIndex = newColoring.findIndex(n => n[0] === nodeToChange);
+    
+    if (nodeIndex !== -1) {
+        const newColor = Math.floor(Math.random() * k);
+        newColoring[nodeIndex][1] = newColor;
+    }
+    
+    return newColoring;
 }
