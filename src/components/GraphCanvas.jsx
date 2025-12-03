@@ -21,6 +21,20 @@ import { getConflictingEdges } from "../algorithms/coloringUtils";
 const nodeTypes = { circle: CircleNode };
 
 /**
+ * 🎨 Colores para clic manual en nodos
+ */
+const MANUAL_COLORS = [
+  "#3498db", // azul
+  "#2ecc71", // verde
+  "#f1c40f", // amarillo
+  "#9b59b6", // morado
+  "#e67e22", // naranja
+  "#1abc9c", // cian
+  "#ff6bcb", // rosa
+  "#bdc3c7", // gris
+];
+
+/**
  * VALIDACIÓN AUTOMÁTICA DE CONEXIONES
  * - Nodo "1": máximo 2 conexiones
  * - Todos los demás nodos: máximo 3 conexiones
@@ -39,7 +53,6 @@ function enforceConnectionLimits(edges) {
     const maxA = a === "1" ? 2 : 3;
     const maxB = b === "1" ? 2 : 3;
 
-    // Solo permitimos la arista si ambos nodos aún están debajo de su límite
     if (da < maxA && db < maxB) {
       filtered.push(e);
       degree.set(a, da + 1);
@@ -50,160 +63,187 @@ function enforceConnectionLimits(edges) {
   return filtered;
 }
 
+/**
+ * Aplica estilos de conflicto a aristas basado en los colores actuales de los nodos.
+ * Usa getConflictingEdges(coloredGraph) — no se cambia la lógica de conflictos.
+ *
+ * Nota: getConflictingEdges se espera que reciba un array del tipo:
+ *   [nodeId, colorIndex, neighborsArray]
+ * y devuelva un Set (o estructura con .has()) con claves de arista en el formato "a-b"
+ * (normalizadas con sort) — eso se mantiene.
+ */
+function applyConflictStyles(edges, nodes) {
+  // Construir estructura de grafo coloreado para usar getConflictingEdges
+  const coloredGraph = nodes.map((node) => {
+    // Preferir colorIndex manual si existe; sino usar color numérico del algoritmo (si hubiera)
+    const colorIndex =
+      typeof node.data?.colorIndex === "number"
+        ? node.data.colorIndex
+        : typeof node.data?.color === "number"
+        ? node.data.color
+        : 0;
+
+    // Encontrar vecinos basado en las aristas
+    const neighbors = edges
+      .filter((e) => e.source === node.id || e.target === node.id)
+      .map((e) => (e.source === node.id ? e.target : e.source));
+
+    return [String(node.id), colorIndex, neighbors];
+  });
+
+  // Obtener aristas en conflicto usando la función utilitaria
+  let conflictingEdgeIds = new Set();
+  try {
+    const res = getConflictingEdges ? getConflictingEdges(coloredGraph) : null;
+    // Aceptamos que res sea Set o Array; convertir a Set
+    if (res instanceof Set) conflictingEdgeIds = res;
+    else if (Array.isArray(res)) conflictingEdgeIds = new Set(res);
+    else if (res && typeof res.has === "function") conflictingEdgeIds = res;
+    else conflictingEdgeIds = new Set();
+  } catch (err) {
+    // Si la util falla, no rompemos; dejamos vacío el conjunto de conflictos
+    // eslint-disable-next-line no-console
+    console.warn("getConflictingEdges falló:", err);
+    conflictingEdgeIds = new Set();
+  }
+
+  // Aplicar estilos basado en conflictos identificados
+  return edges.map((edge) => {
+    // Normalizar clave para buscar en conflictingEdgeIds
+    const edgeKey = [String(edge.source), String(edge.target)].sort().join("-");
+    const isConflict = conflictingEdgeIds.has(edgeKey);
+
+    if (isConflict) {
+      return {
+        ...edge,
+        className: edge.className ? `${edge.className} conflict-edge` : "conflict-edge",
+        style: {
+          ...(edge.style || {}),
+          stroke: "#e74c3c",
+          strokeWidth: 3,
+        },
+      };
+    }
+    return {
+      ...edge,
+      className: edge.className ?? "white-edge",
+      style: edge.style ?? { stroke: "#ffffff", strokeWidth: 1.5 },
+    };
+  });
+}
+
 const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const wrapperRef = useRef(null);
   const reactFlowInstance = useRef(null);
 
-  // Exponer métodos para controlar el grafo desde el exterior
-  useImperativeHandle(ref, () => ({
-    setGraph: (newNodes, newEdges) => {
-      // Normalizar nodos/edges y asegurarse de que tengan los campos necesarios
-      const normalizedNodes = (newNodes || []).map((n, idx) => ({
-        id: String(n.id ?? `node_${idx}`),
-        type: n.type ?? "circle",
-        position: n.position ?? { x: 0, y: 0 },
-        data: n.data ?? { label: idx + 1 },
-      }));
-
-      const normalizedEdgesRaw = (newEdges || []).map((e, idx) => ({
-        id: e && e.id ? String(e.id) : `edge_${idx}`,
-        source: e && e.source ? String(e.source) : undefined,
-        target: e && e.target ? String(e.target) : undefined,
-        type: e && e.type ? e.type : 'default',
-        className: e && e.className ? e.className : 'white-edge',
-        style: e && e.style ? e.style : { stroke: '#ffffff', strokeWidth: 2 },
-        animated: e && typeof e.animated === 'boolean' ? e.animated : false,
-      }));
-
-      // Filtrar aristas inválidas (sin source/target o que refieren nodos inexistentes)
-      const nodeIdSet = new Set(normalizedNodes.map((n) => n.id));
-      const normalizedEdges = normalizedEdgesRaw.filter((e) => {
-        if (!e.source || !e.target) return false;
-        if (!nodeIdSet.has(e.source) || !nodeIdSet.has(e.target)) return false;
-        return true;
-      });
-
-
-      // Si se han descartado aristas, loguearlo para depuración
-      if (normalizedEdgesRaw.length !== normalizedEdges.length) {
-        // eslint-disable-next-line no-console
-        console.warn('GraphCanvas.setGraph: se descartaron aristas inválidas', {
-          raw: normalizedEdgesRaw.length,
-          valid: normalizedEdges.length,
-          invalidSamples: normalizedEdgesRaw.filter(e => !e.source || !e.target).slice(0,5),
-        });
-      }
-
-      // Log de primer nodo/arista para depuración rápida (usar console.log para visibilidad)
-      // eslint-disable-next-line no-console
-      console.log('GraphCanvas.setGraph -> nodes, edges:', JSON.stringify({
-        nodesCount: normalizedNodes.length,
-        edgesCountRaw: normalizedEdgesRaw.length,
-        edgesCountFiltered: normalizedEdges.length,
-        firstNode: normalizedNodes[0],
-        firstEdgeRaw: normalizedEdgesRaw[0],
-        firstEdge: normalizedEdges[0],
-      }, null, 2));
-
-      setNodes(normalizedNodes);
-      setEdges(normalizedEdges);
-
-      // Si la instancia ya existe, forzar que la instancia actualice su estado interno
-      setTimeout(() => {
-        try {
-          if (reactFlowInstance.current) {
-            if (typeof reactFlowInstance.current.setNodes === 'function') {
-              reactFlowInstance.current.setNodes(normalizedNodes);
-            }
-            if (typeof reactFlowInstance.current.setEdges === 'function') {
-              reactFlowInstance.current.setEdges(normalizedEdges);
-            }
-          }
-        } catch (err) {
-          // no bloquear
-          // eslint-disable-next-line no-console
-          console.warn('Error aplicando nodes/edges a reactFlowInstance', err);
-        }
-      }, 100);
-
-      // Forzar ajuste de vista para que las aristas y nodos sean visibles
-      setTimeout(() => {
-        try {
-          if (reactFlowInstance.current && typeof reactFlowInstance.current.fitView === 'function') {
-            reactFlowInstance.current.fitView({ padding: 0.1 });
-          }
-        } catch (err) {
-          // no bloquear en caso de error
-        }
-      }, 50);
-    },
-    resetGraph: () => {
-      setNodes([]);
-      setEdges([]);
-    },
-    getGraph: () => ({ nodes: reactFlowInstance.current ? reactFlowInstance.current.getNodes() : [], edges: reactFlowInstance.current ? reactFlowInstance.current.getEdges() : [] }),
-  }), [setNodes, setEdges]);
-
-  // ===== API imperativa para AutomaticExecute / PlayToolbar =====
+  // ===== API imperativa (única, basada en la del segundo archivo) =====
   useImperativeHandle(
     ref,
     () => ({
       /**
-       * Recibe nodos y aristas desde el algoritmo / toolbar y
-       * los normaliza + aplica límites de conexiones.
+       * setGraph: normaliza nodos/aristas, aplica límites y estilos de conflicto.
+       * Conserva la lógica del segundo archivo, pero ahora soporta
+       * colorIndex/displayColor para nodos (pintado manual).
        */
       setGraph: (newNodes = [], newEdges = []) => {
         // 1) Normalizar nodos
-        const normalizedNodes = newNodes.map((n, idx) => {
+        const normalizedNodes = (newNodes || []).map((n, idx) => {
           const id = String(n.id ?? idx + 1);
           return {
             id,
             type: "circle",
             position:
-              n.position ?? {
+              n.position ??
+              {
                 x: 100 + (idx % 15) * 70,
                 y: 80 + Math.floor(idx / 15) * 70,
               },
-            data: n.data ?? {},
+            // conservar colorIndex/displayColor si vienen en 'n.data'
+            data: {
+              ...(n.data ?? {}),
+              label: n.data?.label ?? Number(id),
+            },
           };
         });
 
         const idSet = new Set(normalizedNodes.map((n) => n.id));
 
         // 2) Normalizar aristas crudas (y eliminar las que apunten a nodos inexistentes)
-        const rawEdges = (newEdges || [])
-          .map((e, idx) => {
-            const source = String(e.source);
-            const target = String(e.target);
+        const normalizedEdgesRaw = (newEdges || []).map((e, idx) => ({
+          id: e && e.id ? String(e.id) : `edge_${idx}`,
+          source: e && e.source ? String(e.source) : undefined,
+          target: e && e.target ? String(e.target) : undefined,
+          type: e && e.type ? e.type : "default",
+          className: e && e.className ? e.className : "white-edge",
+          style: e && e.style ? e.style : { stroke: "#ffffff", strokeWidth: 1.5 },
+          animated: e && typeof e.animated === "boolean" ? e.animated : false,
+        }));
 
-            if (!idSet.has(source) || !idSet.has(target)) {
-              console.warn("Arista inválida descartada:", e);
-              return null;
-            }
+        const filteredEdges = normalizedEdgesRaw.filter((e) => {
+          if (!e.source || !e.target) return false;
+          if (!idSet.has(e.source) || !idSet.has(e.target)) return false;
+          return true;
+        });
 
-            return {
-              id: String(e.id ?? `e-${idx}`),
-              source,
-              target,
-              style: { stroke: "#ffffff", strokeWidth: 1.5 },
-            };
-          })
-          .filter(Boolean);
+        // Si se han descartado aristas, loguearlo para depuración
+        if (normalizedEdgesRaw.length !== filteredEdges.length) {
+          // eslint-disable-next-line no-console
+          console.warn("GraphCanvas.setGraph: se descartaron aristas inválidas", {
+            raw: normalizedEdgesRaw.length,
+            valid: filteredEdges.length,
+            invalidSamples: normalizedEdgesRaw.filter((e) => !e.source || !e.target).slice(0, 5),
+          });
+        }
+
+        // Log de primer nodo/arista para depuración rápida
+        // eslint-disable-next-line no-console
+        console.log(
+          "GraphCanvas.setGraph -> nodes, edges:",
+          JSON.stringify(
+            {
+              nodesCount: normalizedNodes.length,
+              edgesCountRaw: normalizedEdgesRaw.length,
+              edgesCountFiltered: filteredEdges.length,
+              firstNode: normalizedNodes[0],
+              firstEdgeRaw: normalizedEdgesRaw[0],
+              firstEdge: filteredEdges[0],
+            },
+            null,
+            2
+          )
+        );
 
         // 3) Aplicar límites automáticos a las conexiones
-        const limitedEdges = enforceConnectionLimits(rawEdges);
+        const limitedEdges = enforceConnectionLimits(filteredEdges);
 
-        // 4) Aplicar estilos de conflicto
+        // 4) Aplicar estilos de conflicto (usa getConflictingEdges internamente)
         const styledEdges = applyConflictStyles(limitedEdges, normalizedNodes);
 
+        // Guardar en estado
         setNodes(normalizedNodes);
         setEdges(styledEdges);
 
-        if (reactFlowInstance.current) {
-          reactFlowInstance.current.fitView({ padding: 0.2 });
-        }
+        // Sincronizar con la instancia de ReactFlow si existe
+        setTimeout(() => {
+          try {
+            if (reactFlowInstance.current) {
+              if (typeof reactFlowInstance.current.setNodes === "function") {
+                reactFlowInstance.current.setNodes(normalizedNodes);
+              }
+              if (typeof reactFlowInstance.current.setEdges === "function") {
+                reactFlowInstance.current.setEdges(styledEdges);
+              }
+              if (typeof reactFlowInstance.current.fitView === "function") {
+                reactFlowInstance.current.fitView({ padding: 0.2 });
+              }
+            }
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn("Error sincronizando reactFlowInstance en setGraph", err);
+          }
+        }, 50);
       },
 
       resetGraph: () => {
@@ -211,16 +251,20 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         setEdges([]);
       },
 
-      getGraph: () => ({ nodes, edges }),
+      getGraph: () => ({
+        nodes: reactFlowInstance.current ? reactFlowInstance.current.getNodes() : nodes,
+        edges: reactFlowInstance.current ? reactFlowInstance.current.getEdges() : edges,
+      }),
 
       /**
        * Recalcula los estilos de conflicto de las aristas basado en los colores actuales
-       * Útil cuando los colores de los nodos cambian dinámicamente
+       * Útil cuando los colores de los nodos cambian dinámicamente (ej. clic manual).
        */
       updateConflictStyles: () => {
         setEdges((currentEdges) => applyConflictStyles(currentEdges, nodes));
       },
     }),
+    // dependencias
     [nodes, edges, setNodes, setEdges]
   );
 
@@ -239,10 +283,45 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         );
 
         // Aplicar el mismo límite cuando conectas a mano
-        return enforceConnectionLimits(withNew);
+        const limited = enforceConnectionLimits(withNew);
+
+        // Aplicar estilos de conflicto en el resultado (usando nodos actuales)
+        return applyConflictStyles(limited, nodes);
       });
     },
-    [disableOnConnect]
+    [disableOnConnect, nodes]
+  );
+
+  // ===== 🎨 Cambio de color al hacer click en un nodo (funcionalidad añadida del primer archivo) =====
+  const onNodeClick = useCallback(
+    (event, node) => {
+      // evitar comportamientos extra
+      event?.stopPropagation?.();
+
+      setNodes((prev) => {
+        const updated = prev.map((n) => {
+          if (n.id !== node.id) return n;
+
+          const currentIndex = typeof n.data?.colorIndex === "number" ? n.data.colorIndex : 0;
+          const nextIndex = (currentIndex + 1) % MANUAL_COLORS.length;
+          const nextColor = MANUAL_COLORS[nextIndex];
+
+          return {
+            ...n,
+            data: {
+              ...(n.data || {}),
+              colorIndex: nextIndex,
+              displayColor: nextColor,
+            },
+          };
+        });
+
+        // actualizar estilos de conflicto tras el cambio manual
+        setEdges((currentEdges) => applyConflictStyles(currentEdges, updated));
+        return updated;
+      });
+    },
+    [setNodes, setEdges]
   );
 
   // ===== Drag & drop desde la toolbar manual =====
@@ -288,14 +367,15 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
         onInit={(instance) => {
           reactFlowInstance.current = instance;
         }}
         onDrop={onDrop}
         onDragOver={onDragOver}
         fitView
-        minZoom={0.05}  
-        maxZoom={2} 
+        minZoom={0.05}
+        maxZoom={2}
       >
         <Background />
         <MiniMap />
