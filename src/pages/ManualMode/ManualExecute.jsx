@@ -7,7 +7,7 @@ import GraphPlayToolbar from "../../components/GraphPlayToolbar";
 
 function ManualExecute() {
   const [removeMode, setRemoveMode] = useState(false);
-  const graphCanvasRef = useRef(null); // ✅ REF agregada aquí
+  const graphCanvasRef = useRef(null);
   const graphPlayToolbarRef = useRef(null);
 
   const enableRemoveMode = () => {
@@ -27,7 +27,7 @@ function ManualExecute() {
       <div className="top-side">
         <div className="top-left">
           <GraphCanvas 
-            ref={graphCanvasRef} // ✅ Pasar ref aquí
+            ref={graphCanvasRef}
             removeMode={removeMode}
             setRemoveMode={setRemoveMode}
           />
@@ -36,7 +36,7 @@ function ManualExecute() {
           <GraphToolbar onDeleteNodes={enableRemoveMode} />
           <GraphPlayToolbar 
             ref={graphPlayToolbarRef}
-            graphCanvasRef={graphCanvasRef} // ✅ Pasar ref aquí
+            graphCanvasRef={graphCanvasRef}
             onReset={handleReset}
           />
         </div>
