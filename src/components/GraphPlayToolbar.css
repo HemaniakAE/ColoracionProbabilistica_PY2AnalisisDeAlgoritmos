@@ -264,11 +264,68 @@
 
 .attempt-button {
   background: transparent;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .attempt-button:hover {
   transform: scale(1.04);
+}
+
+.attempt-button.has-conflicts {
+  border-color: #ff4444 !important;
+  color: #ff6666 !important;
+}
+
+.attempt-button.has-conflicts:hover {
+  background: rgba(255, 68, 68, 0.1) !important;
+  border-color: #ff6666 !important;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.3) !important;
+}
+
+.attempt-button.best-attempt {
+  border-color: #ffb800 !important;
+  color: #ffd700 !important;
+  background: rgba(255, 184, 0, 0.05) !important;
+}
+
+.attempt-button.best-attempt:hover {
+  background: rgba(255, 184, 0, 0.15) !important;
+  border-color: #ffd700 !important;
+  box-shadow: 0 0 10px rgba(255, 184, 0, 0.4) !important;
+}
+
+.conflict-badge {
+  margin-left: 4px;
+  font-size: 0.9rem;
+  display: inline-block;
+  animation: conflictFlash 1.5s ease-in-out infinite;
+}
+
+.best-badge {
+  margin-left: 4px;
+  font-size: 0.9rem;
+  display: inline-block;
+  animation: bestPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes conflictFlash {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bestPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.15);
+  }
 }
 
 .select-algorithm {

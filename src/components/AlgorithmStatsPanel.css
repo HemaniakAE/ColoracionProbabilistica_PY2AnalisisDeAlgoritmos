@@ -116,7 +116,7 @@
 /* Sección Conflictos */
 .conflicts-stats .stat-card {
   background: linear-gradient(135deg, #303133 0%, #877e91 100%);
-  color: #333;
+  color: #ffffff;
 }
 
 .conflicts-stats .stat-detail {
@@ -125,7 +125,7 @@
 }
 
 .conflicts-stats .stat-label {
-  color: #555;
+  color: #ffffff;
 }
 
 /* Comparativa por k */
@@ -166,7 +166,7 @@
 }
 
 .metric-name {
-  color: #555;
+  color: #ffffff;
   font-weight: 600;
 }
 

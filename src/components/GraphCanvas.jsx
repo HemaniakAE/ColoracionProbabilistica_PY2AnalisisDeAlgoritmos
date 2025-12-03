@@ -20,7 +20,7 @@ import CircleNode from "./CircleNode";
 const nodeTypes = { circle: CircleNode };
 
 /**
- * ✅ VALIDACIÓN AUTOMÁTICA DE CONEXIONES
+ * VALIDACIÓN AUTOMÁTICA DE CONEXIONES
  * - Nodo "1": máximo 2 conexiones
  * - Todos los demás nodos: máximo 3 conexiones
  */
@@ -190,7 +190,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
           })
           .filter(Boolean);
 
-        // 3) ✅ Aplicar límites automáticos a las conexiones
+        // 3) Aplicar límites automáticos a las conexiones
         const limitedEdges = enforceConnectionLimits(rawEdges);
 
         setNodes(normalizedNodes);
@@ -233,7 +233,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
           eds
         );
 
-        // ✅ Aplicar el mismo límite cuando conectas a mano
+        // Aplicar el mismo límite cuando conectas a mano
         return enforceConnectionLimits(withNew);
       });
     },
@@ -289,7 +289,7 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         fitView
-        minZoom={0.05}   // 👈 ¡Podes alejar muchísimo más!
+        minZoom={0.05}  
         maxZoom={2} 
       >
         <Background />

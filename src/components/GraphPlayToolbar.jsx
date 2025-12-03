@@ -216,6 +216,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
           k,
           algorithm: algorithmName,
           ...iterationData,
+          hasConflicts: stats.conflicts > 0, // Marcar si tiene conflictos
           // Datos para gráficas de conflictos por iteración
           conflictsByIteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => 
             Math.max(0, stats.conflicts - Math.random() * 2)
@@ -404,20 +405,35 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
           <p className="attempts-empty">Todavía no hay intentos</p>
         )}
         <div className="attempts-list">
-          {attempts.map((att, idx) => (
-            <button
-              key={att.id}
-              className={
-                idx === currentAttemptIndex
-                  ? "attempt-button active"
-                  : "attempt-button"
-              }
-              onClick={() => handleLoadAttempt(idx)}
-              disabled={isExecuting}
-            >
-              #{att.id} – {att.timestamp}
-            </button>
-          ))}
+          {attempts.map((att, idx) => {
+            // Encontrar el intento con menor número de conflictos
+            const minConflicts = Math.min(...attempts.map(a => a.totalConflicts));
+            const isBestAttempt = att.totalConflicts === minConflicts;
+
+            return (
+              <button
+                key={att.id}
+                className={`attempt-button ${
+                  idx === currentAttemptIndex ? "active" : ""
+                } ${att.hasConflicts ? "has-conflicts" : ""} ${
+                  isBestAttempt ? "best-attempt" : ""
+                }`}
+                onClick={() => handleLoadAttempt(idx)}
+                disabled={isExecuting}
+                title={
+                  isBestAttempt
+                    ? `Mejor intento (${minConflicts} conflictos)`
+                    : att.hasConflicts
+                    ? "Este intento tiene conflictos"
+                    : "Sin conflictos"
+                }
+              >
+                #{att.id} – {att.timestamp}
+                {att.hasConflicts && <span className="conflict-badge">⚠</span>}
+                {isBestAttempt && <span className="best-badge"></span>}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
