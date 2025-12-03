@@ -10,7 +10,11 @@ export class ColoringAlgorithmManager {
   }
 
   executeAlgorithm(name, graph, k, options = {}) {
-    const { maxIterations = 1000, findValidSolution = false } = options;
+    const { 
+      maxIterations = 1000, 
+      findValidSolution = true,
+      acceptanceProbability = 0.7
+    } = options;
 
     const algoritmo = this.algorithms[name];
     if (!algoritmo) {
@@ -18,9 +22,10 @@ export class ColoringAlgorithmManager {
     }
 
     if (name === "las_vegas") {
-      return algoritmo(graph, k, maxIterations);
-    } else {
       return algoritmo(graph, k, maxIterations, findValidSolution);
+    } else {
+      // Monte Carlo: pasar findValidSolution y acceptanceProbability
+      return algoritmo(graph, k, maxIterations, acceptanceProbability, findValidSolution);
     }
   }
 }
