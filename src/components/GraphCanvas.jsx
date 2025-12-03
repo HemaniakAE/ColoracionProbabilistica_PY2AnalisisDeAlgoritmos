@@ -207,6 +207,14 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
       },
 
       getGraph: () => ({ nodes, edges }),
+
+      /**
+       * Recalcula los estilos de conflicto de las aristas basado en los colores actuales
+       * Útil cuando los colores de los nodos cambian dinámicamente
+       */
+      updateConflictStyles: () => {
+        setEdges((currentEdges) => applyConflictStyles(currentEdges, nodes));
+      },
     }),
     [nodes, edges, setNodes, setEdges]
   );

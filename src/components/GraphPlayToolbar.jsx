@@ -113,7 +113,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
 
       // Si no hay grafo, generar uno
       if (!nodes || nodes.length === 0) {
-        const nodeCount = Math.floor(Math.random() * (150 - 100 + 1)) + 100;
+        const nodeCount = Math.floor(Math.random() * (150 - 140 + 1)) + 140;
         const gridGraph = generateUniformGridGraph(nodeCount);
         nodes = gridGraph.nodes;
         edges = gridGraph.edges;
