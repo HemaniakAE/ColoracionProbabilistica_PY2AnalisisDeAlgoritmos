@@ -42,6 +42,8 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
   const [attempts, setAttempts] = useState([]);
   const [currentAttemptIndex, setCurrentAttemptIndex] = useState(null);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("las_vegas");
+  const [findValidSolution, setFindValidSolution] = useState("yes");
+  const [acceptanceProbability, setAcceptanceProbability] = useState(0.5);
 
   const clearAttempts = () => {
     console.log("Clearing attempts in GraphPlayToolbar");
@@ -154,7 +156,11 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
       currentAlgorithm,
       baseGraphForAlgo,
       k,
-      { maxIterations: 2000 }
+      { 
+        maxIterations: 2000,
+        findValidSolution: findValidSolution === "yes",
+        acceptanceProbability: parseFloat(acceptanceProbability)
+      }
     );
 
     const colorMapAlgo = new Map(
@@ -278,6 +284,34 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
         <option value="las_vegas">Las vegas</option>
         <option value="monte_carlo">Monte Carlo</option>
       </select>
+
+      <div className="option-select">
+        <label>Encontrar solución válida:</label>
+        <select 
+          className="select-valid-solution"
+          value={findValidSolution}
+          onChange={(e) => setFindValidSolution(e.target.value)}
+        >
+          <option value="yes">Sí</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      {selectedAlgorithm === "monte_carlo" && (
+        <div className="option-select">
+          <label>Probabilidad de aceptación:</label>
+          <input
+            type="range"
+            min="0.1"
+            max="1"
+            step="0.1"
+            value={acceptanceProbability}
+            onChange={(e) => setAcceptanceProbability(parseFloat(e.target.value))}
+            className="probability-slider"
+          />
+          <span className="probability-value">{acceptanceProbability.toFixed(1)}</span>
+        </div>
+      )}
 
       <div className="color-config">
         <label>Cantidad de colores</label>
