@@ -281,6 +281,8 @@ const GraphCanvas = forwardRef(({ disableOnConnect = false }, ref) => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         fitView
+        minZoom={0.05}   // 👈 ¡Podes alejar muchísimo más!
+        maxZoom={2} 
       >
         <Background />
         <MiniMap />

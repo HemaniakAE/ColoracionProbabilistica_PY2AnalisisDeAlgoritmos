@@ -37,6 +37,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
     "yellow",
   ]);
   const [limitHit, setLimitHit] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   // lista de intentos
   const [attempts, setAttempts] = useState([]);
@@ -44,6 +45,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("las_vegas");
   const [findValidSolution, setFindValidSolution] = useState("yes");
   const [acceptanceProbability, setAcceptanceProbability] = useState(0.5);
+  const [numberOfAttempts, setNumberOfAttempts] = useState(50);
 
   const clearAttempts = () => {
     console.log("Clearing attempts in GraphPlayToolbar");
@@ -94,153 +96,159 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
 
   // Ejecutar algoritmo desde Play
   const handlePlayClick = () => {
-  if (!graphCanvasRef?.current) return;
+    if (!graphCanvasRef?.current) return;
 
-  // Capturar el algoritmo seleccionado en este momento
-  const currentAlgorithm = selectedAlgorithm;
-  const algorithmName = currentAlgorithm === "las_vegas" ? "Las Vegas" : "Monte Carlo";
+    setIsExecuting(true);
 
-  let { nodes, edges } =
-    typeof graphCanvasRef.current.getGraph === "function"
-      ? graphCanvasRef.current.getGraph()
-      : { nodes: [], edges: [] };
+    // Usar setTimeout para que la UI se actualice antes de iniciar el cálculo
+    setTimeout(() => {
+      // Capturar el algoritmo seleccionado en este momento
+      const currentAlgorithm = selectedAlgorithm;
+      const algorithmName = currentAlgorithm === "las_vegas" ? "Las Vegas" : "Monte Carlo";
 
-  // Si no hay grafo, generar uno
-  if (!nodes || nodes.length === 0) {
-    const nodeCount = Math.floor(Math.random() * (150 - 100 + 1)) + 100;
-    const gridGraph = generateUniformGridGraph(nodeCount);
-    nodes = gridGraph.nodes;
-    edges = gridGraph.edges;
-  }
+      let { nodes, edges } =
+        typeof graphCanvasRef.current.getGraph === "function"
+          ? graphCanvasRef.current.getGraph()
+          : { nodes: [], edges: [] };
 
-  // Construir adyacencia UNA vez
-  const adjacency = new Map(
-    nodes.map((n, idx) => [String(n.id ?? idx + 1), new Set()])
-  );
-
-  edges.forEach((e) => {
-    const a = String(e.source);
-    const b = String(e.target);
-    if (adjacency.has(a) && adjacency.has(b)) {
-      adjacency.get(a).add(b);
-      adjacency.get(b).add(a);
-    }
-  });
-
-  const baseGraphForAlgo = nodes.map((n, idx) => {
-    const id = String(n.id ?? idx + 1);
-    return [id, 0, Array.from(adjacency.get(id) ?? [])];
-  });
-
-  const baseNodes = nodes.map((n, idx) => ({
-    ...n,
-    id: String(n.id ?? idx + 1),
-  }));
-
-  const k = selectedColors.length;
-  if (k < 3) {
-    alert("Se necesitan al menos 3 colores.");
-    return;
-  }
-
-  const newBatch = [];
-  let lastGraph = baseNodes;
-  const batchStartTime = performance.now();
-  const allIterations = [];
-  const allConflicts = [];
-
-  // ===== EJECUTAR 50 INTENTOS =====
-  for (let i = 0; i < 50; i++) {
-
-    const result = manager.executeAlgorithm(
-      currentAlgorithm,
-      baseGraphForAlgo,
-      k,
-      { 
-        maxIterations: 2000,
-        findValidSolution: findValidSolution === "yes",
-        acceptanceProbability: parseFloat(acceptanceProbability)
+      // Si no hay grafo, generar uno
+      if (!nodes || nodes.length === 0) {
+        const nodeCount = Math.floor(Math.random() * (150 - 100 + 1)) + 100;
+        const gridGraph = generateUniformGridGraph(nodeCount);
+        nodes = gridGraph.nodes;
+        edges = gridGraph.edges;
       }
-    );
 
-    const colorMapAlgo = new Map(
-      (result.coloring || []).map(([id, idxColor]) => [
-        String(id),
-        idxColor,
-      ])
-    );
+      // Construir adyacencia UNA vez
+      const adjacency = new Map(
+        nodes.map((n, idx) => [String(n.id ?? idx + 1), new Set()])
+      );
 
-    const coloredNodes = baseNodes.map((n) => {
-      const id = String(n.id);
-      const colorIndex = colorMapAlgo.get(id) ?? 0;
-      const paletteIndex = colorIndex % k;
-      const colorName = selectedColors[paletteIndex];
-      const displayColor = COLOR_MAP[colorName] || colorName || "#e74c3c";
+      edges.forEach((e) => {
+        const a = String(e.source);
+        const b = String(e.target);
+        if (adjacency.has(a) && adjacency.has(b)) {
+          adjacency.get(a).add(b);
+          adjacency.get(b).add(a);
+        }
+      });
 
-      return {
+      const baseGraphForAlgo = nodes.map((n, idx) => {
+        const id = String(n.id ?? idx + 1);
+        return [id, 0, Array.from(adjacency.get(id) ?? [])];
+      });
+
+      const baseNodes = nodes.map((n, idx) => ({
         ...n,
-        data: {
-          ...(n.data || {}),
-          colorIndex,
-          displayColor,
-        },
-      };
-    });
+        id: String(n.id ?? idx + 1),
+      }));
 
-    // Capturar estadísticas del resultado
-    const stats = result.stats || {};
-    const iterationData = {
-      iteration: i + 1,
-      totalIterations: stats.iterations || 0,
-      totalConflicts: stats.conflicts || 0,
-      executionTime: stats.execution_time || 0,
-      isSuccessful: stats.success !== false,
-    };
+      const k = selectedColors.length;
+      if (k < 3) {
+        alert("Se necesitan al menos 3 colores.");
+        setIsExecuting(false);
+        return;
+      }
 
-    allIterations.push(stats.iterations || 0);
-    allConflicts.push(stats.conflicts || 0);
+      const newBatch = [];
+      let lastGraph = baseNodes;
+      const batchStartTime = performance.now();
+      const allIterations = [];
+      const allConflicts = [];
 
-    newBatch.push({
-      id: attempts.length + newBatch.length + 1,
-      timestamp: new Date().toLocaleTimeString(),
-      nodes: JSON.parse(JSON.stringify(coloredNodes)),
-      edges: JSON.parse(JSON.stringify(edges)),
-      palette: [...selectedColors],
-      k,
-      algorithm: algorithmName,
-      ...iterationData,
-      // Datos para gráficas de conflictos por iteración
-      conflictsByIteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => 
-        Math.max(0, stats.conflicts - Math.random() * 2)
-      ), // Simulación de evolución
-    });
+      // ===== EJECUTAR N INTENTOS =====
+      for (let i = 0; i < numberOfAttempts; i++) {
 
-    lastGraph = coloredNodes;
-  }
+        const result = manager.executeAlgorithm(
+          currentAlgorithm,
+          baseGraphForAlgo,
+          k,
+          { 
+            maxIterations: 2000,
+            findValidSolution: findValidSolution === "yes",
+            acceptanceProbability: parseFloat(acceptanceProbability)
+          }
+        );
 
-  const batchEndTime = performance.now();
-  const avgExecutionTime = (batchEndTime - batchStartTime) / 50;
+        const colorMapAlgo = new Map(
+          (result.coloring || []).map(([id, idxColor]) => [
+            String(id),
+            idxColor,
+          ])
+        );
 
-  // Guardar todos los intentos
-  const updatedAttempts = [...attempts, ...newBatch];
-  setAttempts(updatedAttempts);
-  
-  // Notificar al componente padre
-  if (onAttemptsUpdate) {
-    onAttemptsUpdate(updatedAttempts);
-  }
+        const coloredNodes = baseNodes.map((n) => {
+          const id = String(n.id);
+          const colorIndex = colorMapAlgo.get(id) ?? 0;
+          const paletteIndex = colorIndex % k;
+          const colorName = selectedColors[paletteIndex];
+          const displayColor = COLOR_MAP[colorName] || colorName || "#e74c3c";
 
-  // Mostrar el último
-  const newIndex = updatedAttempts.length - 1;
-  setCurrentAttemptIndex(newIndex);
-  
-  if (onSelectedAttemptChange) {
-    onSelectedAttemptChange(newIndex);
-  }
+          return {
+            ...n,
+            data: {
+              ...(n.data || {}),
+              colorIndex,
+              displayColor,
+            },
+          };
+        });
 
-  graphCanvasRef.current.setGraph(lastGraph, edges);
-};
+        // Capturar estadísticas del resultado
+        const stats = result.stats || {};
+        const iterationData = {
+          iteration: i + 1,
+          totalIterations: stats.iterations || 0,
+          totalConflicts: stats.conflicts || 0,
+          executionTime: stats.execution_time || 0,
+          isSuccessful: stats.success !== false,
+        };
 
+        allIterations.push(stats.iterations || 0);
+        allConflicts.push(stats.conflicts || 0);
+
+        newBatch.push({
+          id: attempts.length + newBatch.length + 1,
+          timestamp: new Date().toLocaleTimeString(),
+          nodes: JSON.parse(JSON.stringify(coloredNodes)),
+          edges: JSON.parse(JSON.stringify(edges)),
+          palette: [...selectedColors],
+          k,
+          algorithm: algorithmName,
+          ...iterationData,
+          // Datos para gráficas de conflictos por iteración
+          conflictsByIteration: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(() => 
+            Math.max(0, stats.conflicts - Math.random() * 2)
+          ), // Simulación de evolución
+        });
+
+        lastGraph = coloredNodes;
+      }
+
+      const batchEndTime = performance.now();
+      const avgExecutionTime = (batchEndTime - batchStartTime) / 50;
+
+      // Guardar todos los intentos
+      const updatedAttempts = [...attempts, ...newBatch];
+      setAttempts(updatedAttempts);
+      
+      // Notificar al componente padre
+      if (onAttemptsUpdate) {
+        onAttemptsUpdate(updatedAttempts);
+      }
+
+      // Mostrar el último
+      const newIndex = updatedAttempts.length - 1;
+      setCurrentAttemptIndex(newIndex);
+      
+      if (onSelectedAttemptChange) {
+        onSelectedAttemptChange(newIndex);
+      }
+
+      graphCanvasRef.current.setGraph(lastGraph, edges);
+      setIsExecuting(false);
+    }, 100);
+  };
 
   const handleLoadAttempt = (index) => {
     const att = attempts[index];
@@ -258,12 +266,20 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
 
   return (
     <div className="graph-play-toolbar">
+      {/* Overlay de carga */}
+      {isExecuting && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Ejecutando algoritmo...</p>
+        </div>
+      )}
+
       <h3>Ejecución</h3>
 
       <button
         className="play-button"
-        disabled={!canPlay}
-        aria-disabled={!canPlay}
+        disabled={!canPlay || isExecuting}
+        aria-disabled={!canPlay || isExecuting}
         title={
           canPlay
             ? "Ejecutar algoritmo"
@@ -280,6 +296,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
         className="select-algorithm"
         value={selectedAlgorithm}
         onChange={(e) => setSelectedAlgorithm(e.target.value)}
+        disabled={isExecuting}
       >
         <option value="las_vegas">Las vegas</option>
         <option value="monte_carlo">Monte Carlo</option>
@@ -291,6 +308,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
           className="select-valid-solution"
           value={findValidSolution}
           onChange={(e) => setFindValidSolution(e.target.value)}
+          disabled={isExecuting}
         >
           <option value="yes">Sí</option>
           <option value="no">No</option>
@@ -308,10 +326,27 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
             value={acceptanceProbability}
             onChange={(e) => setAcceptanceProbability(parseFloat(e.target.value))}
             className="probability-slider"
+            disabled={isExecuting}
           />
           <span className="probability-value">{acceptanceProbability.toFixed(1)}</span>
         </div>
       )}
+
+      <div className="option-select">
+        <label>Cantidad de intentos:</label>
+        <select 
+          className="select-attempts"
+          value={numberOfAttempts}
+          onChange={(e) => setNumberOfAttempts(parseInt(e.target.value))}
+          disabled={isExecuting}
+        >
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+        </select>
+      </div>
 
       <div className="color-config">
         <label>Cantidad de colores</label>
@@ -321,6 +356,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
           max={10}
           value={colorCount}
           onChange={handleColorCountChange}
+          disabled={isExecuting}
         />
       </div>
 
@@ -343,6 +379,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
                   selected ? "selected" : ""
                 }`}
                 onClick={() => toggleColor(c.value)}
+                disabled={isExecuting}
               >
                 <span className="color-emoji">
                   {c.label.split(" ")[0]}
@@ -376,6 +413,7 @@ export default forwardRef(function GraphPlayToolbar({ graphCanvasRef, onAttempts
                   : "attempt-button"
               }
               onClick={() => handleLoadAttempt(idx)}
+              disabled={isExecuting}
             >
               #{att.id} – {att.timestamp}
             </button>

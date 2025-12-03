@@ -315,6 +315,27 @@
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
 }
 
+.select-attempts {
+  background: rgba(40, 40, 40, 0.9);
+  border: 1px solid rgba(90, 90, 90, 0.6);
+  border-radius: 6px;
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.select-attempts:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(50, 50, 50, 0.9);
+}
+
+.select-attempts:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
 /* Slider de probabilidad */
 .probability-slider {
   width: 100%;
@@ -373,6 +394,45 @@
   margin-top: 2px;
 }
 
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+/* Spinner giratorio */
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Texto debajo del spinner */
+.loading-text {
+  margin-top: 20px;
+  color: white;
+  font-size: 18px;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Animación de rotación */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 /* Ajustes mobile */
 @media (max-width: 480px) {
   .color-options {
